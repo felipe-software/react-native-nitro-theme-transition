@@ -57,14 +57,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/salehayman/react-native-nitro-theme-transition.git"
+    "url": "git+https://github.com/saleh2001k/react-native-nitro-theme-transition.git"
   },
   "author": "Saleh",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/salehayman/react-native-nitro-theme-transition/issues"
+    "url": "https://github.com/saleh2001k/react-native-nitro-theme-transition/issues"
   },
-  "homepage": "https://github.com/salehayman/react-native-nitro-theme-transition#readme",
+  "homepage": "https://github.com/saleh2001k/react-native-nitro-theme-transition#readme",
   "publishConfig": {
     "access": "public"
   },

@@ -9,6 +9,14 @@ OS render thread, so a busy JavaScript thread cannot drop a frame of it.
 
 Built on [Nitro Modules](https://nitro.margelo.com). iOS and Android.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demo.gif" alt="The example app switching themes on Android and iOS side by side" width="700">
+</p>
+
+<p align="center">
+  <em>The <a href="./example">example app</a>, running on Android and iOS at the same time.</em>
+</p>
+
 ```sh
 npm install react-native-nitro-theme-transition react-native-nitro-modules
 ```
