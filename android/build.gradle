@@ -1,0 +1,89 @@
+// Gradle module for the Android half of @repo/theme-transition.
+//
+// No `buildscript { }` block on purpose: the Android and Kotlin plugins are
+// already on the root project's classpath (see apps/mobile/android/build.gradle),
+// and pinning our own versions here is how a library ends up fighting the app's.
+
+def safeExtGet(prop, fallback) {
+  rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+def reactNativeArchitectures() {
+  def value = rootProject.getProperties().get("reactNativeArchitectures")
+  return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+def isNewArchitectureEnabled() {
+  return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+if (isNewArchitectureEnabled()) {
+  apply plugin: 'com.facebook.react'
+}
+
+// Adds nitrogen's generated Kotlin to the source set.
+apply from: '../nitrogen/generated/android/NitroThemeTransition+autolinking.gradle'
+
+android {
+  namespace "com.margelo.nitro.nitrothemetransition"
+  compileSdkVersion safeExtGet('compileSdkVersion', 36)
+
+  defaultConfig {
+    minSdkVersion safeExtGet('minSdkVersion', 24)
+
+    externalNativeBuild {
+      cmake {
+        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+        abiFilters(*reactNativeArchitectures())
+      }
+    }
+  }
+
+  buildFeatures {
+    // Required for `find_package(ReactAndroid)` / `find_package(fbjni)` in CMake.
+    prefab true
+  }
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+
+  packagingOptions {
+    // These all ship with the app already; bundling a second copy in this AAR
+    // makes the linker pick between duplicates at runtime.
+    excludes = [
+      "META-INF",
+      "META-INF/**",
+      "**/libjsi.so",
+      "**/libc++_shared.so",
+      "**/libreactnative.so",
+      "**/libreact_nativemodule_core.so",
+      "**/libturbomodulejsijni.so",
+      "**/libfbjni.so",
+    ]
+  }
+}
+
+repositories {
+  mavenCentral()
+  google()
+}
+
+dependencies {
+  implementation 'com.facebook.react:react-native'
+  implementation project(":react-native-nitro-modules")
+}

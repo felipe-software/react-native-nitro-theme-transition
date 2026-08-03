@@ -1,0 +1,112 @@
+{
+  "name": "react-native-nitro-theme-transition",
+  "version": "0.1.0",
+  "description": "GPU-driven theme-change transitions for React Native \u2014 circular reveal, wipe, fade and blur, without Skia, Reanimated or any JS animation library.",
+  "main": "./lib/commonjs/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/commonjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/typescript/module/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "lib",
+    "ios",
+    "android",
+    "nitrogen",
+    "nitro.json",
+    "react-native.config.js",
+    "NitroThemeTransition.podspec",
+    "README.md",
+    "LICENSE",
+    "!android/build",
+    "!android/.cxx",
+    "!android/.gradle",
+    "!**/__tests__",
+    "!**/.*"
+  ],
+  "scripts": {
+    "codegen": "nitrogen",
+    "build": "bob build",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf lib android/build android/.cxx",
+    "prepare": "bob build"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "nitro",
+    "nitro-modules",
+    "theme",
+    "dark-mode",
+    "transition",
+    "animation",
+    "circular-reveal",
+    "unistyles"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salehayman/react-native-nitro-theme-transition.git"
+  },
+  "author": "Saleh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/salehayman/react-native-nitro-theme-transition/issues"
+  },
+  "homepage": "https://github.com/salehayman/react-native-nitro-theme-transition#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-nitro-modules": ">=0.36.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "nitrogen": "^0.36.5",
+    "react": "19.2.0",
+    "react-native": "0.86.0",
+    "react-native-builder-bob": "^0.40.13",
+    "react-native-nitro-modules": "^0.36.5",
+    "typescript": "^5.9.3"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "workspaces": [
+    "example"
+  ]
+}
