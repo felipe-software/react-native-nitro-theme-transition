@@ -69,6 +69,35 @@ Native's own `StyleSheet` to prove it.
 missing, the capture fails, or the platform is web, the change still happens —
 just without animation. The animation is never load-bearing.
 
+## Demos
+
+<table>
+<tr>
+<td width="50%" valign="top" align="center">
+
+<img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/real-app.gif" alt="Brand and light/dark switching inside a production app" width="330">
+
+**In a real app**
+
+Brand, mode, font and corner-radius changes in a shipping
+[Unistyles](https://www.unistyl.es) app — the transition riding on top of a
+genuine whole-app restyle, not a toy screen.
+
+</td>
+<td width="50%" valign="top" align="center">
+
+<img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/stress-js.gif" alt="The animation staying smooth while the JS thread is under load" width="330">
+
+**JS thread under load**
+
+Watch the `JS` counter in the perf overlay collapse while the reveal keeps
+running. The animation is submitted to the OS render thread once, so JavaScript
+is not in the loop and cannot stutter it.
+
+</td>
+</tr>
+</table>
+
 ## Options
 
 | Option         | Default            | Notes                                                      |
