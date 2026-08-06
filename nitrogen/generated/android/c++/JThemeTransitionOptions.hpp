@@ -12,8 +12,10 @@
 
 #include "JThemeTransitionDirection.hpp"
 #include "JThemeTransitionKind.hpp"
+#include "JThemeTransitionShape.hpp"
 #include "ThemeTransitionDirection.hpp"
 #include "ThemeTransitionKind.hpp"
+#include "ThemeTransitionShape.hpp"
 
 namespace margelo::nitro::nitrothemetransition {
 
@@ -46,13 +48,22 @@ namespace margelo::nitro::nitrothemetransition {
       double settleFrames = this->getFieldValue(fieldSettleFrames);
       static const auto fieldDirection = clazz->getField<JThemeTransitionDirection>("direction");
       jni::local_ref<JThemeTransitionDirection> direction = this->getFieldValue(fieldDirection);
+      static const auto fieldAngleDeg = clazz->getField<double>("angleDeg");
+      double angleDeg = this->getFieldValue(fieldAngleDeg);
+      static const auto fieldShape = clazz->getField<JThemeTransitionShape>("shape");
+      jni::local_ref<JThemeTransitionShape> shape = this->getFieldValue(fieldShape);
+      static const auto fieldBands = clazz->getField<double>("bands");
+      double bands = this->getFieldValue(fieldBands);
       return ThemeTransitionOptions(
         kind->toCpp(),
         durationMs,
         originX,
         originY,
         settleFrames,
-        direction->toCpp()
+        direction->toCpp(),
+        angleDeg,
+        shape->toCpp(),
+        bands
       );
     }
 
@@ -62,7 +73,7 @@ namespace margelo::nitro::nitrothemetransition {
      */
     [[maybe_unused]]
     static jni::local_ref<JThemeTransitionOptions::javaobject> fromCpp(const ThemeTransitionOptions& value) {
-      using JSignature = JThemeTransitionOptions(jni::alias_ref<JThemeTransitionKind>, double, double, double, double, jni::alias_ref<JThemeTransitionDirection>);
+      using JSignature = JThemeTransitionOptions(jni::alias_ref<JThemeTransitionKind>, double, double, double, double, jni::alias_ref<JThemeTransitionDirection>, double, jni::alias_ref<JThemeTransitionShape>, double);
       static const auto clazz = javaClassStatic();
       static const auto create = clazz->getStaticMethod<JSignature>("fromCpp");
       return create(
@@ -72,7 +83,10 @@ namespace margelo::nitro::nitrothemetransition {
         value.originX,
         value.originY,
         value.settleFrames,
-        JThemeTransitionDirection::fromCpp(value.direction)
+        JThemeTransitionDirection::fromCpp(value.direction),
+        value.angleDeg,
+        JThemeTransitionShape::fromCpp(value.shape),
+        value.bands
       );
     }
   };

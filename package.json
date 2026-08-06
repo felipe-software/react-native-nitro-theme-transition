@@ -40,7 +40,10 @@
     "build": "bob build",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf lib android/build android/.cxx",
-    "prepare": "bob build"
+    "prepare": "bob build",
+    "release:apk": "bash ./scripts/build-apk.sh",
+    "release:android": "bun run --cwd example release:android",
+    "release:ios": "bun run --cwd example release:ios"
   },
   "keywords": [
     "react-native",

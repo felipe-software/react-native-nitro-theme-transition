@@ -25,8 +25,28 @@ public extension ThemeTransitionKind {
         self = .circularrevealinverse
       case "slide":
         self = .slide
+      case "split":
+        self = .split
+      case "barnDoor":
+        self = .barndoor
+      case "blinds":
+        self = .blinds
       case "blur":
         self = .blur
+      case "pixlated":
+        self = .pixlated
+      case "dissolve":
+        self = .dissolve
+      case "stripes":
+        self = .stripes
+      case "ripple":
+        self = .ripple
+      case "shatter":
+        self = .shatter
+      case "iris":
+        self = .iris
+      case "zoom":
+        self = .zoom
       default:
         return nil
     }
@@ -45,8 +65,28 @@ public extension ThemeTransitionKind {
         return "circularRevealInverse"
       case .slide:
         return "slide"
+      case .split:
+        return "split"
+      case .barndoor:
+        return "barnDoor"
+      case .blinds:
+        return "blinds"
       case .blur:
         return "blur"
+      case .pixlated:
+        return "pixlated"
+      case .dissolve:
+        return "dissolve"
+      case .stripes:
+        return "stripes"
+      case .ripple:
+        return "ripple"
+      case .shatter:
+        return "shatter"
+      case .iris:
+        return "iris"
+      case .zoom:
+        return "zoom"
     }
   }
 }

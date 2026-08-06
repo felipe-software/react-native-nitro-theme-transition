@@ -33,7 +33,17 @@ namespace margelo::nitro::nitrothemetransition {
     CIRCULARREVEAL      SWIFT_NAME(circularreveal) = 1,
     CIRCULARREVEALINVERSE      SWIFT_NAME(circularrevealinverse) = 2,
     SLIDE      SWIFT_NAME(slide) = 3,
-    BLUR      SWIFT_NAME(blur) = 4,
+    SPLIT      SWIFT_NAME(split) = 4,
+    BARNDOOR      SWIFT_NAME(barndoor) = 5,
+    BLINDS      SWIFT_NAME(blinds) = 6,
+    BLUR      SWIFT_NAME(blur) = 7,
+    PIXLATED      SWIFT_NAME(pixlated) = 8,
+    DISSOLVE      SWIFT_NAME(dissolve) = 9,
+    STRIPES      SWIFT_NAME(stripes) = 10,
+    RIPPLE      SWIFT_NAME(ripple) = 11,
+    SHATTER      SWIFT_NAME(shatter) = 12,
+    IRIS      SWIFT_NAME(iris) = 13,
+    ZOOM      SWIFT_NAME(zoom) = 14,
   } CLOSED_ENUM;
 
 } // namespace margelo::nitro::nitrothemetransition
@@ -50,7 +60,17 @@ namespace margelo::nitro {
         case hashString("circularReveal"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::CIRCULARREVEAL;
         case hashString("circularRevealInverse"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::CIRCULARREVEALINVERSE;
         case hashString("slide"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::SLIDE;
+        case hashString("split"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::SPLIT;
+        case hashString("barnDoor"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::BARNDOOR;
+        case hashString("blinds"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::BLINDS;
         case hashString("blur"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::BLUR;
+        case hashString("pixlated"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::PIXLATED;
+        case hashString("dissolve"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::DISSOLVE;
+        case hashString("stripes"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::STRIPES;
+        case hashString("ripple"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::RIPPLE;
+        case hashString("shatter"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::SHATTER;
+        case hashString("iris"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::IRIS;
+        case hashString("zoom"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::ZOOM;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum ThemeTransitionKind - invalid value!");
       }
@@ -61,7 +81,17 @@ namespace margelo::nitro {
         case margelo::nitro::nitrothemetransition::ThemeTransitionKind::CIRCULARREVEAL: return JSIConverter<std::string>::toJSI(runtime, "circularReveal");
         case margelo::nitro::nitrothemetransition::ThemeTransitionKind::CIRCULARREVEALINVERSE: return JSIConverter<std::string>::toJSI(runtime, "circularRevealInverse");
         case margelo::nitro::nitrothemetransition::ThemeTransitionKind::SLIDE: return JSIConverter<std::string>::toJSI(runtime, "slide");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::SPLIT: return JSIConverter<std::string>::toJSI(runtime, "split");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::BARNDOOR: return JSIConverter<std::string>::toJSI(runtime, "barnDoor");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::BLINDS: return JSIConverter<std::string>::toJSI(runtime, "blinds");
         case margelo::nitro::nitrothemetransition::ThemeTransitionKind::BLUR: return JSIConverter<std::string>::toJSI(runtime, "blur");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::PIXLATED: return JSIConverter<std::string>::toJSI(runtime, "pixlated");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::DISSOLVE: return JSIConverter<std::string>::toJSI(runtime, "dissolve");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::STRIPES: return JSIConverter<std::string>::toJSI(runtime, "stripes");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::RIPPLE: return JSIConverter<std::string>::toJSI(runtime, "ripple");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::SHATTER: return JSIConverter<std::string>::toJSI(runtime, "shatter");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::IRIS: return JSIConverter<std::string>::toJSI(runtime, "iris");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::ZOOM: return JSIConverter<std::string>::toJSI(runtime, "zoom");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert ThemeTransitionKind to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");
@@ -77,7 +107,17 @@ namespace margelo::nitro {
         case hashString("circularReveal"):
         case hashString("circularRevealInverse"):
         case hashString("slide"):
+        case hashString("split"):
+        case hashString("barnDoor"):
+        case hashString("blinds"):
         case hashString("blur"):
+        case hashString("pixlated"):
+        case hashString("dissolve"):
+        case hashString("stripes"):
+        case hashString("ripple"):
+        case hashString("shatter"):
+        case hashString("iris"):
+        case hashString("zoom"):
           return true;
         default:
           return false;

@@ -2,8 +2,9 @@
   "expo": {
     "name": "Theme Transition",
     "slug": "nitro-theme-transition-example",
+    "scheme": "nitrothemetransition",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -18,11 +19,14 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
+      "softwareKeyboardLayoutMode": "resize",
       "package": "com.nitrothemetransition.example"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "output": "single"
     },
-    "newArchEnabled": true
+    "newArchEnabled": true,
+    "plugins": ["expo-router", "expo-image"]
   }
 }

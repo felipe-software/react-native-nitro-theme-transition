@@ -1,7 +1,8 @@
 # react-native-nitro-theme-transition
 
-Native, GPU-driven theme-change transitions for React Native — circular reveal,
-wipe, fade and blur.
+Native, GPU-driven theme-change transitions for React Native — fifteen of them:
+circular reveal and its inverse, iris, wipe, split, barn door, blinds, fade,
+zoom, blur, pixelize, dissolve, stripes, ripple and shatter.
 
 **No Skia. No Reanimated. No JS animation library.** The animation is Core
 Animation on iOS and the platform animators on Android, both interpolated by the
@@ -39,7 +40,7 @@ import { withThemeTransition } from 'react-native-nitro-theme-transition';
 
 withThemeTransition(
   () => setScheme(s => (s === 'light' ? 'dark' : 'light')), // must be synchronous
-  { kind: 'circularReveal', durationMs: 400, origin: { x, y } },
+  { kind: 'circularReveal', durationMs: 650, origin: { x, y } },
 );
 ```
 
@@ -62,8 +63,9 @@ and animates the snapshot away. Anything that changes the UI synchronously works
 — a theme, a locale/RTL flip, a font-size change, a density switch.
 
 There is no dependency on Unistyles or any styling library. The
-[`example/`](./example) app deliberately uses nothing but `useState` and React
-Native's own `StyleSheet` to prove it.
+[`example/`](./example) app drives four palettes from a plain module-level store
+and React Native's own `StyleSheet` to prove it — no styling runtime, no
+animation library.
 
 `applyTheme` runs **exactly once** in every path: if the native module is
 missing, the capture fails, or the platform is web, the change still happens —
@@ -103,14 +105,34 @@ is not in the loop and cannot stutter it.
 | Option         | Default            | Notes                                                      |
 | -------------- | ------------------ | ---------------------------------------------------------- |
 | `kind`         | `'circularReveal'` | see below                                                  |
-| `durationMs`   | `400`              |                                                            |
-| `origin`       | screen centre      | circle centre, in dp                                       |
-| `direction`    | `'bottom'`         | `slide` only — edge the wipe travels toward                |
+| `durationMs`   | `650`              | below ~500ms most reveals read as a flicker; try longer for `pixlated` |
+| `origin`       | screen centre      | circle centre, in dp — pass the touch's `pageX/pageY`       |
+| `direction`    | `'bottom'`         | `slide` / `split` — edge the wipe travels toward; the axis for `split` |
+| `angleDeg`     | `0`                | tilt of the boundary line, in degrees — every sweep kind   |
+| `shape`        | `'hexagon'`        | `iris` — `'circle' \| 'diamond' \| 'hexagon' \| 'roundedRect'` |
+| `bands`        | `6`                | `blinds` — louvre count, clamped to 2…24                   |
 | `settleFrames` | `2`                | frames to hold before revealing, so the change has painted |
 
 `THEME_TRANSITION_KINDS` and `THEME_TRANSITION_DIRECTIONS` are exported as arrays
 for building pickers. `isThemeTransitionAvailable()` reports whether the native
 module is present.
+
+### `origin` — just pass `pageX/pageY`
+
+React Native reports a touch relative to the surface it happened in, and a
+presented screen — a modal, a form sheet — is its own surface. A sheet resting at
+its half detent starts ~450dp down the window, so a press inside it arrives with
+a `pageY` that is short by exactly that much.
+
+You do not have to correct for it, and in JavaScript you cannot: inside a sheet
+even `measureInWindow` reports positions in that sheet's surface. The library
+translates the point natively, reading the presentation's own frame at capture
+time — so dragging a sheet between detents needs no handling at all.
+
+```ts
+const { pageX, pageY } = event.nativeEvent;
+withThemeTransition(applyTheme, { origin: { x: pageX, y: pageY } });
+```
 
 ### `settleFrames` — the one thing to check
 
@@ -130,17 +152,45 @@ animating down to the **old** colours. Raise it:
 withThemeTransition(applyTheme, { settleFrames: 4 });
 ```
 
+`pixlated` also waits two animation frames before `commit` and then polls the
+second (new-theme) snapshot until it differs from the first — settleFrames alone
+is not enough for that kind when the theme is React-driven.
+
 ## Kinds
 
-| `kind`                    | What the outgoing screen does                        |
-| ------------------------- | ---------------------------------------------------- |
-| `'circularReveal'`        | collapses **into** a circle at `origin`              |
-| `'circularRevealInverse'` | a hole opens **out** from `origin` and grows         |
-| `'slide'`                 | a straight edge wipes across, painting the new theme |
-| `'fade'`                  | dissolves                                            |
-| `'blur'`                  | blurs and recedes slightly as it dissolves           |
+| `kind`                    | What the outgoing screen does                                      |
+| ------------------------- | ------------------------------------------------------------------ |
+| `'circularReveal'`        | collapses **into** a circle at `origin`                            |
+| `'circularRevealInverse'` | a hole opens **out** from `origin` and grows                       |
+| `'iris'`                  | collapses into a `shape` — diamond, hexagon or squircle             |
+| `'slide'`                 | a straight edge wipes across, painting the new theme               |
+| `'split'`                 | two edges part from the centre, retreating to opposite sides       |
+| `'barnDoor'`              | two edges close in; the old screen shrinks to a middle band        |
+| `'blinds'`                | `bands` parallel louvres, each wiping across itself at once        |
+| `'fade'`                  | dissolves                                                          |
+| `'zoom'`                  | scales up and fades                                                |
+| `'blur'`                  | blurs and recedes slightly as it dissolves                         |
+| `'pixlated'`              | breaks into pixels; the colour swap rides the mosaic mid-transition |
+| `'dissolve'`              | disintegrates into grain, speck by speck                           |
+| `'stripes'`               | a grainy edge sweeps across, ordered along `direction`             |
+| `'ripple'`                | wavefronts expand from `origin`                                    |
+| `'shatter'`               | breaks into shards that fall away in turn                          |
 
-All five share one timing curve, so the two platforms agree.
+They come from four families, and the family is what actually matters:
+
+| Family | Kinds | The one idea |
+| --- | --- | --- |
+| Shape mask | `circularReveal`, `circularRevealInverse`, `iris` | a shrinking outline at a point |
+| Straight boundaries | `slide`, `split`, `barnDoor`, `blinds` | half-planes sweeping along a normal |
+| Mask ladder | `dissolve`, `stripes`, `ripple`, `shatter` | a per-cell disappearing order, pre-built |
+| Whole-layer | `fade`, `zoom`, `blur`, `pixlated` | animate the copy itself |
+
+All fifteen share one timing curve, so the two platforms agree. Each also has a
+minimum duration — 200ms for `fade`, 240ms for `zoom`, 260ms for the reveals and
+the sweeps, 300ms for `blinds` and `blur`, 420ms for `dissolve` and `stripes`,
+480ms for `ripple` and `shatter`, 520ms for `pixlated`. Below those a full-screen
+copy coming apart has too few frames to read as motion. Pass `durationMs: 0` to
+opt out of animating entirely; that is never clamped.
 
 `circularReveal` and its inverse are the same shape run opposite ways, and they
 are each other's natural counterpart: whichever is used for light→dark, the other
@@ -152,15 +202,70 @@ over them, so it reads as a line painting the new colours across the screen.
 Translating the snapshot instead drags the whole UI sideways, which looks like a
 page transition rather than a theme change.
 
+### `angleDeg` — tilting the wipe
+
+`slide` and `split` sweep a boundary along a normal rather than clipping a
+rectangle, so the line can be raked over without changing where it travels:
+
+```ts
+withThemeTransition(applyTheme, { kind: 'slide', direction: 'top', angleDeg: 40 });
+```
+
+That still leaves through the top; the edge doing the leaving is 40° off level.
+Positive is clockwise on screen, and the sweep always ends fully uncovered
+whatever the angle, because it measures its own travel along the tilted normal.
+
+`split` uses both edges at once, so `direction` picks the axis for it:
+`'top'`/`'bottom'` part the screen horizontally, `'left'`/`'right'` vertically.
+
+### The mask ladder — `dissolve`, `stripes`, `ripple`, `shatter`
+
+The reference for this effect is a Skia fragment shader that discards a pixel
+when its cell's noise falls below a rising threshold. There is no shader here,
+and there does not need to be one: the noise is **static**, so a cell simply has
+a fixed time at which it disappears, and every frame the effect can ever draw is
+known in advance.
+
+So it is a pre-built stack of alpha masks, computed once and shared by every
+transition that matches. On iOS the whole sequence is handed to the render server
+as discrete keyframes, which puts it in the same class as the reveals — nothing
+runs per frame at all.
+
+Nothing in that argument depends on the value being *noise*, which is why four
+kinds share the implementation. Any per-cell number in 0…1 is a valid
+disappearing order: `dissolve` uses the hash, `stripes` uses position along
+`direction` roughened with a little hash, `ripple` uses distance from `origin`
+with a sine riding on it, and `shatter` uses the hash of the nearest of 48 seeds
+so whole Voronoi shards leave together.
+
+### `pixlated` — dual snapshot
+
+Unlike the other kinds, pixelize needs **both** themes on screen at once: the
+outgoing frame and a second capture of the already-painted incoming theme. They
+share one triangle `blockSize` curve (chunkiest at the midpoint); the old mosaic
+fades out over the full duration so the colour change is obvious mid-transition,
+behind the pixels — the same look as Skia's `pixelize`, without Skia.
+
+For React-driven themes the library also yields two animation frames before
+`commit` and, on the native side, polls the second capture until it differs from
+the first (or hits a short frame budget). Capturing too early samples the old
+colours twice, which makes the mid crossfade a no-op and the real swap appear
+only when the overlay is removed.
+
 ### How each one is done
 
 | `kind`                    | iOS                                      | Android                                   |
 | ------------------------- | ---------------------------------------- | ----------------------------------------- |
-| `'fade'`                  | `UIViewPropertyAnimator`, opacity        | `ValueAnimator` → `alpha`                 |
+| `'fade'`                  | `UIViewPropertyAnimator`, opacity        | `ViewPropertyAnimator` → `alpha`          |
 | `'circularReveal'`        | `CAShapeLayer` mask + `CABasicAnimation` | `ViewAnimationUtils.createCircularReveal` |
 | `'circularRevealInverse'` | the same mask, even-odd fill rule        | `Canvas.clipOutPath` in `onDraw`          |
-| `'slide'`                 | animated mask rect                       | `Canvas.clipRect` in `onDraw`             |
+| `'iris'`                  | the same mask, a fixed-vertex polygon    | `Canvas.clipPath` on the same polygon     |
+| `'slide'`                 | animated mask half-plane                 | `Canvas.clipRect`, or `clipPath` if tilted |
+| `'split'` `'barnDoor'` `'blinds'` | animated mask half-planes / slabs | `Canvas.clipPath` over all of them        |
 | `'blur'`                  | `UIVisualEffectView` + property animator | `RenderEffect.createBlurEffect` (API 31+) |
+| `'zoom'`                  | `UIViewPropertyAnimator`, scale + alpha  | `ViewPropertyAnimator`, scale + alpha     |
+| `'pixlated'`              | dual mosaic + alpha crossfade            | dual mosaic + alpha crossfade             |
+| `'dissolve'` `'stripes'` `'ripple'` `'shatter'` | discrete `CAKeyframeAnimation` on a mask | `ALPHA_8` mask composited `DST_IN` |
 
 Below API 31 there is no `RenderEffect`, and the fallback is the same motion
 without the blur rather than a CPU blur that would drop frames.
@@ -208,12 +313,16 @@ change gets its own snapshot and its own animation, and they play at the same
 time:
 
 ```
-iOS: window                          Android: android.R.id.content
+iOS: overlay window                  Android: android.R.id.content
   ├─ snapshot A  ← oldest, TOP-most      ├─ [2] snapshot A  ← oldest, TOP-most
-  ├─ snapshot B  ← next                  ├─ [1] snapshot B  ← next
-  └─ rootViewController.view             └─ [0] React Native root
-        ↑ live app, newest theme               ↑ live app, newest theme
+  └─ snapshot B  ← next                  ├─ [1] snapshot B  ← next
+     app window                          └─ [0] React Native root
+       ↑ live app, newest theme               ↑ live app, newest theme
 ```
+
+On iOS the copies are hosted in a window of their own, one level above the app.
+That is what lets the capture be a snapshot of the **whole window** — the only
+way to be sure a presented modal is in it — without copying the copies.
 
 Every snapshot reveals whatever sits directly beneath it, which is exactly the
 state the app was in one step later — so newer snapshots go **below** older ones.
@@ -231,11 +340,21 @@ snapshot is released as soon as its animation ends, including an explicit
 
 - **Reduce Motion.** Deliberately the app's call, not the library's — check
   `AccessibilityInfo.isReduceMotionEnabled()` and skip the animation yourself.
-- **`Modal`.** RN's built-in `Modal` is a separate `UIWindow` (iOS) / `Dialog`
-  window (Android) and is not part of the captured view, so it will not animate.
+- **`Modal` on Android.** Best-effort via dialog-host capture; confirm on your
+  RN version. On **iOS** the capture is a snapshot of the scene's windows, so
+  everything presented (RN `Modal`, a router modal, a form sheet, an alert) is
+  included along with its dimming.
+- **System windows.** Alerts, share sheets, autofill and the keyboard are drawn
+  by the OS above the app's window and are never part of the copy.
 - **Web.** No native side; the callback runs and the change is instant.
 
 ## Example
+
+An Expo Router app with a drawer, native bottom tabs, modals, a form sheet and
+**sixteen case screens** — one per situation a real app runs into: reveal
+origins, rapid switching, a blocked JS thread, settle-frame tuning, RN `Modal`
+vs router modals, keyboards, long lists, native SwiftUI/Compose surfaces,
+Reduce Motion, missing-module fallbacks and rotation.
 
 ```sh
 cd example
@@ -243,6 +362,9 @@ bun install          # or npm install
 bun run prebuild
 bun run ios          # or: bun run android
 ```
+
+Its map is in [`example/README.md`](./example/README.md); the integration
+patterns worth copying live in `example/src/theme/transition.ts`.
 
 ## Contributing
 

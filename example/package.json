@@ -1,17 +1,33 @@
 {
   "name": "react-native-nitro-theme-transition-example",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "dependencies": {
-    "expo": "~57.0.9",
+    "@expo/ui": "~57.0.9",
+    "@expo/vector-icons": "^15.0.2",
+    "expo": "~57.0.10",
+    "expo-blur": "~57.0.2",
+    "expo-constants": "~57.0.9",
+    "expo-haptics": "~57.0.1",
+    "expo-image": "~57.0.2",
+    "expo-linking": "~57.0.5",
+    "expo-router": "~57.0.10",
     "expo-status-bar": "~57.0.1",
+    "expo-symbols": "~57.0.1",
+    "expo-system-ui": "~57.0.2",
     "react": "19.2.3",
     "react-native": "0.86.2",
+    "react-native-gesture-handler": "~2.32.0",
     "react-native-nitro-modules": "^0.36.5",
-    "react-native-nitro-theme-transition": "file:.."
+    "react-native-nitro-theme-transition": "file:..",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "babel-preset-expo": "~57.0.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -19,7 +35,11 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "prebuild": "expo prebuild --clean"
+    "typecheck": "tsc --noEmit",
+    "prebuild": "expo prebuild --clean",
+    "release:apk": "bash ../scripts/build-apk.sh",
+    "release:android": "expo run:android --variant release --no-bundler",
+    "release:ios": "expo run:ios --configuration Release --no-bundler"
   },
   "private": true
 }

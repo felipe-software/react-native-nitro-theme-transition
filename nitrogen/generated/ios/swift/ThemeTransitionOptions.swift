@@ -18,8 +18,8 @@ public extension ThemeTransitionOptions {
   /**
    * Create a new instance of `ThemeTransitionOptions`.
    */
-  init(kind: ThemeTransitionKind, durationMs: Double, originX: Double, originY: Double, settleFrames: Double, direction: ThemeTransitionDirection) {
-    self.init(kind, durationMs, originX, originY, settleFrames, direction)
+  init(kind: ThemeTransitionKind, durationMs: Double, originX: Double, originY: Double, settleFrames: Double, direction: ThemeTransitionDirection, angleDeg: Double, shape: ThemeTransitionShape, bands: Double) {
+    self.init(kind, durationMs, originX, originY, settleFrames, direction, angleDeg, shape, bands)
   }
 
   @inline(__always)
@@ -50,5 +50,20 @@ public extension ThemeTransitionOptions {
   @inline(__always)
   var direction: ThemeTransitionDirection {
     return self.__direction
+  }
+  
+  @inline(__always)
+  var angleDeg: Double {
+    return self.__angleDeg
+  }
+  
+  @inline(__always)
+  var shape: ThemeTransitionShape {
+    return self.__shape
+  }
+  
+  @inline(__always)
+  var bands: Double {
+    return self.__bands
   }
 }
