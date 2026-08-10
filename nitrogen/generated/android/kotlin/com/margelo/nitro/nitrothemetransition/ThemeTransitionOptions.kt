@@ -35,7 +35,19 @@ data class ThemeTransitionOptions(
   val settleFrames: Double,
   @DoNotStrip
   @Keep
-  val direction: ThemeTransitionDirection
+  val direction: ThemeTransitionDirection,
+  @DoNotStrip
+  @Keep
+  val angleDeg: Double,
+  @DoNotStrip
+  @Keep
+  val shape: ThemeTransitionShape,
+  @DoNotStrip
+  @Keep
+  val blurStyle: ThemeTransitionBlurStyle,
+  @DoNotStrip
+  @Keep
+  val bands: Double
 ) {
   /* primary constructor */
 
@@ -48,6 +60,10 @@ data class ThemeTransitionOptions(
       && Objects.deepEquals(this.originY, other.originY)
       && Objects.deepEquals(this.settleFrames, other.settleFrames)
       && Objects.deepEquals(this.direction, other.direction)
+      && Objects.deepEquals(this.angleDeg, other.angleDeg)
+      && Objects.deepEquals(this.shape, other.shape)
+      && Objects.deepEquals(this.blurStyle, other.blurStyle)
+      && Objects.deepEquals(this.bands, other.bands)
   }
 
   override fun hashCode(): Int {
@@ -57,7 +73,11 @@ data class ThemeTransitionOptions(
       originX,
       originY,
       settleFrames,
-      direction
+      direction,
+      angleDeg,
+      shape,
+      blurStyle,
+      bands
     ).contentDeepHashCode()
   }
 
@@ -69,8 +89,8 @@ data class ThemeTransitionOptions(
     @Keep
     @Suppress("unused")
     @JvmStatic
-    private fun fromCpp(kind: ThemeTransitionKind, durationMs: Double, originX: Double, originY: Double, settleFrames: Double, direction: ThemeTransitionDirection): ThemeTransitionOptions {
-      return ThemeTransitionOptions(kind, durationMs, originX, originY, settleFrames, direction)
+    private fun fromCpp(kind: ThemeTransitionKind, durationMs: Double, originX: Double, originY: Double, settleFrames: Double, direction: ThemeTransitionDirection, angleDeg: Double, shape: ThemeTransitionShape, blurStyle: ThemeTransitionBlurStyle, bands: Double): ThemeTransitionOptions {
+      return ThemeTransitionOptions(kind, durationMs, originX, originY, settleFrames, direction, angleDeg, shape, blurStyle, bands)
     }
   }
 }

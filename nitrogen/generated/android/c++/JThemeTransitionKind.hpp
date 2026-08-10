@@ -54,9 +54,42 @@ namespace margelo::nitro::nitrothemetransition {
         case ThemeTransitionKind::SLIDE:
           static const auto fieldSLIDE = clazz->getStaticField<JThemeTransitionKind>("SLIDE");
           return clazz->getStaticFieldValue(fieldSLIDE);
+        case ThemeTransitionKind::SPLIT:
+          static const auto fieldSPLIT = clazz->getStaticField<JThemeTransitionKind>("SPLIT");
+          return clazz->getStaticFieldValue(fieldSPLIT);
+        case ThemeTransitionKind::BARNDOOR:
+          static const auto fieldBARNDOOR = clazz->getStaticField<JThemeTransitionKind>("BARNDOOR");
+          return clazz->getStaticFieldValue(fieldBARNDOOR);
+        case ThemeTransitionKind::BLINDS:
+          static const auto fieldBLINDS = clazz->getStaticField<JThemeTransitionKind>("BLINDS");
+          return clazz->getStaticFieldValue(fieldBLINDS);
         case ThemeTransitionKind::BLUR:
           static const auto fieldBLUR = clazz->getStaticField<JThemeTransitionKind>("BLUR");
           return clazz->getStaticFieldValue(fieldBLUR);
+        case ThemeTransitionKind::PIXLATED:
+          static const auto fieldPIXLATED = clazz->getStaticField<JThemeTransitionKind>("PIXLATED");
+          return clazz->getStaticFieldValue(fieldPIXLATED);
+        case ThemeTransitionKind::DISSOLVE:
+          static const auto fieldDISSOLVE = clazz->getStaticField<JThemeTransitionKind>("DISSOLVE");
+          return clazz->getStaticFieldValue(fieldDISSOLVE);
+        case ThemeTransitionKind::STRIPES:
+          static const auto fieldSTRIPES = clazz->getStaticField<JThemeTransitionKind>("STRIPES");
+          return clazz->getStaticFieldValue(fieldSTRIPES);
+        case ThemeTransitionKind::RIPPLE:
+          static const auto fieldRIPPLE = clazz->getStaticField<JThemeTransitionKind>("RIPPLE");
+          return clazz->getStaticFieldValue(fieldRIPPLE);
+        case ThemeTransitionKind::SHATTER:
+          static const auto fieldSHATTER = clazz->getStaticField<JThemeTransitionKind>("SHATTER");
+          return clazz->getStaticFieldValue(fieldSHATTER);
+        case ThemeTransitionKind::IRIS:
+          static const auto fieldIRIS = clazz->getStaticField<JThemeTransitionKind>("IRIS");
+          return clazz->getStaticFieldValue(fieldIRIS);
+        case ThemeTransitionKind::ZOOM:
+          static const auto fieldZOOM = clazz->getStaticField<JThemeTransitionKind>("ZOOM");
+          return clazz->getStaticFieldValue(fieldZOOM);
+        case ThemeTransitionKind::LIQUIDGLASS:
+          static const auto fieldLIQUIDGLASS = clazz->getStaticField<JThemeTransitionKind>("LIQUIDGLASS");
+          return clazz->getStaticFieldValue(fieldLIQUIDGLASS);
         default:
           std::string stringValue = std::to_string(static_cast<int>(value));
           throw std::invalid_argument("Invalid enum value (" + stringValue + "!");

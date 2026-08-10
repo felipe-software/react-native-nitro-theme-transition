@@ -10,18 +10,24 @@
 // Forward declarations of C++ defined types
 // Forward declaration of `HybridThemeTransitionSpec` to properly resolve imports.
 namespace margelo::nitro::nitrothemetransition { class HybridThemeTransitionSpec; }
+// Forward declaration of `ThemeTransitionBlurStyle` to properly resolve imports.
+namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionBlurStyle; }
 // Forward declaration of `ThemeTransitionDirection` to properly resolve imports.
 namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionDirection; }
 // Forward declaration of `ThemeTransitionKind` to properly resolve imports.
 namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionKind; }
 // Forward declaration of `ThemeTransitionOptions` to properly resolve imports.
 namespace margelo::nitro::nitrothemetransition { struct ThemeTransitionOptions; }
+// Forward declaration of `ThemeTransitionShape` to properly resolve imports.
+namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionShape; }
 
 // Include C++ defined types
 #include "HybridThemeTransitionSpec.hpp"
+#include "ThemeTransitionBlurStyle.hpp"
 #include "ThemeTransitionDirection.hpp"
 #include "ThemeTransitionKind.hpp"
 #include "ThemeTransitionOptions.hpp"
+#include "ThemeTransitionShape.hpp"
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/Result.hpp>
 #include <exception>

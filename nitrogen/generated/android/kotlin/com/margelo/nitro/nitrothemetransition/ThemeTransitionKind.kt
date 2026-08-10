@@ -20,7 +20,18 @@ enum class ThemeTransitionKind(@DoNotStrip @Keep val value: Int) {
   CIRCULARREVEAL(1),
   CIRCULARREVEALINVERSE(2),
   SLIDE(3),
-  BLUR(4);
+  SPLIT(4),
+  BARNDOOR(5),
+  BLINDS(6),
+  BLUR(7),
+  PIXLATED(8),
+  DISSOLVE(9),
+  STRIPES(10),
+  RIPPLE(11),
+  SHATTER(12),
+  IRIS(13),
+  ZOOM(14),
+  LIQUIDGLASS(15);
 
   companion object
 }
