@@ -3,17 +3,21 @@ set -euo pipefail
 
 # Turn raw screen recordings of the example app into the two demo sets:
 #
-#   assets/demos/<name>.gif   small looping clips, embedded in the README
-#   docs/media/<name>.mp4     full-quality clips, played on the demo site
+#   assets/demos/<name>.gif   short looping clips, embedded in the README
+#   docs/media/<name>.mp4     the WHOLE recording, played on the demo site
 #   docs/poster/<name>.jpg    still frames, so the site shows something at rest
 #
 # Usage: bash ./scripts/encode-demos.sh ~/Desktop/*.mov
 #
-# The recordings are minutes long and hundreds of megabytes; only the ~3s around
-# the theme change is worth keeping. That moment is found automatically: the
-# whole screen swaps between a light and a dark palette, so the frame with the
-# largest jump in average luminance is the transition. Everything else is
-# someone scrolling to the next effect.
+# The two sets are cut differently on purpose. The site plays each recording end
+# to end, because someone who opened an effect's page came to watch it. A GIF is
+# ten times the bytes of the same seconds of H.264 and sits inline in the README,
+# so that one is trimmed to the ~3s around the theme change.
+#
+# That moment is found automatically: the whole screen swaps between a light and
+# a dark palette, so the frame with the largest jump in average luminance is the
+# transition. The poster frame is taken there too — a still of the effect
+# mid-flight beats a still of the menu it starts on.
 #
 # The masters are deliberately NOT committed — a 13s 120fps capture is ~20MB,
 # and sixteen of them would put 360MB in every clone. Keep them out of the repo.
@@ -23,8 +27,8 @@ GIF_DIR="$ROOT_DIR/assets/demos"
 MP4_DIR="$ROOT_DIR/docs/media"
 POSTER_DIR="$ROOT_DIR/docs/poster"
 
-LEAD=1.0     # seconds of context before the change
-CLIP=3.4     # total clip length
+LEAD=1.0     # seconds of context before the change, in the README GIF
+CLIP=3.4     # README GIF length; the site's MP4 is never trimmed
 GIF_WIDTH=320
 MP4_WIDTH=900
 
@@ -68,9 +72,10 @@ for src in "$@"; do
     -vf "fps=16,scale=$GIF_WIDTH:-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=80[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" \
     -loop 0 "$GIF_DIR/$name.gif"
 
-  ffmpeg -y -v error -ss "$start" -t "$CLIP" -i "$src" \
+  # No -ss/-t here: the site plays the recording end to end.
+  ffmpeg -y -v error -i "$src" \
     -vf "fps=30,scale=$MP4_WIDTH:-2:flags=lanczos" \
-    -c:v libx264 -crf 27 -preset slow -pix_fmt yuv420p -movflags +faststart -an \
+    -c:v libx264 -crf 28 -preset slow -pix_fmt yuv420p -movflags +faststart -an \
     "$MP4_DIR/$name.mp4"
 
   ffmpeg -y -v error -ss "$start" -i "$src" -frames:v 1 -vf "scale=450:-2" -q:v 6 \

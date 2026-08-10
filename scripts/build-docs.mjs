@@ -182,14 +182,15 @@ ${themeButton}
         <h1><code>${e.kind}</code></h1>
         <p class="lede">${e.tagline}</p>
 
-        <video class="hero" muted loop playsinline autoplay preload="auto"
+        <video class="hero" muted loop playsinline autoplay controls preload="auto"
                poster="../poster/${e.file}.jpg"
                aria-label="${esc(e.kind)} transition running on Android and iOS">
           <source src="../media/${e.file}.mp4" type="video/mp4" />
         </video>
         <p class="caption">
-          The <a href="${REPO}/tree/main/example">example app</a> on an Android emulator and an iOS
-          simulator at once. Click to replay.
+          The full recording — the <a href="${REPO}/tree/main/example">example app</a> on an Android
+          emulator and an iOS simulator at once, with <code>${e.kind}</code> played several times
+          over. Scrub or pause with the controls.
         </p>
 
         <p class="body">${e.body}</p>

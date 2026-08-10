@@ -17,8 +17,9 @@ if (videos.length) {
 
   for (const video of videos) {
     io.observe(video);
-    // Cards are links; replaying from a click there would fight the navigation.
-    if (video.closest('a')) continue;
+    // Cards are links, so a click there is navigation; a player with controls
+    // handles its own clicks. Neither wants a click-to-restart on top.
+    if (video.closest('a') || video.controls) continue;
     video.addEventListener('click', () => {
       video.currentTime = 0;
       video.play().catch(() => {});
