@@ -178,6 +178,7 @@ export function runThemed(apply: () => void, options: ChangeOptions = {}) {
     direction: options.direction ?? settings.direction,
     angleDeg: options.angleDeg ?? settings.angleDeg,
     shape: options.shape ?? settings.shape,
+    blurStyle: options.blurStyle ?? settings.blurStyle,
     bands: options.bands ?? settings.bands,
     durationMs: options.durationMs ?? settings.durationMs,
     settleFrames: options.settleFrames ?? settings.settleFrames,

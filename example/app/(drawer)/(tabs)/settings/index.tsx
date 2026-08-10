@@ -82,10 +82,14 @@ export default function Settings() {
           </Picker>
         </Host>
 
-        {settings.kind === 'slide' && (
+        {(settings.kind === 'slide' ||
+          settings.kind === 'split' ||
+          settings.kind === 'barnDoor' ||
+          settings.kind === 'blinds' ||
+          settings.kind === 'stripes') && (
           <>
             <Divider />
-            <Hint>Wipe direction</Hint>
+            <Hint>{settings.kind === 'slide' ? 'Wipe direction' : 'Sweep axis'}</Hint>
             <Host style={styles.picker} colorScheme={scheme} seedColor={theme.tint}>
               <Picker
                 selectedValue={settings.direction}

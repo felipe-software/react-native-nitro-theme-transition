@@ -47,6 +47,8 @@ public extension ThemeTransitionKind {
         self = .iris
       case "zoom":
         self = .zoom
+      case "liquidGlass":
+        self = .liquidglass
       default:
         return nil
     }
@@ -87,6 +89,8 @@ public extension ThemeTransitionKind {
         return "iris"
       case .zoom:
         return "zoom"
+      case .liquidglass:
+        return "liquidGlass"
     }
   }
 }

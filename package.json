@@ -1,7 +1,7 @@
 {
   "name": "react-native-nitro-theme-transition",
-  "version": "0.1.0",
-  "description": "GPU-driven theme-change transitions for React Native \u2014 circular reveal, wipe, fade and blur, without Skia, Reanimated or any JS animation library.",
+  "version": "1.0.0",
+  "description": "GPU-driven theme-change transitions for React Native \u2014 sixteen effects including circular reveal, iris, wipe, split, blinds, blur, Liquid Glass, pixelize, dissolve, ripple and shatter, without Skia, Reanimated or any JS animation library.",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
   "types": "./lib/typescript/commonjs/index.d.ts",
@@ -27,6 +27,7 @@
     "nitro.json",
     "react-native.config.js",
     "NitroThemeTransition.podspec",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE",
     "!android/build",
@@ -42,6 +43,8 @@
     "clean": "rm -rf lib android/build android/.cxx",
     "prepare": "bob build",
     "release:apk": "bash ./scripts/build-apk.sh",
+    "encode:demos": "bash ./scripts/encode-demos.sh",
+    "docs:build": "node ./scripts/build-docs.mjs",
     "release:android": "bun run --cwd example release:android",
     "release:ios": "bun run --cwd example release:ios"
   },
@@ -62,7 +65,7 @@
     "type": "git",
     "url": "git+https://github.com/saleh2001k/react-native-nitro-theme-transition.git"
   },
-  "author": "Saleh",
+  "author": "Saleh Almashni (https://salehos.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/saleh2001k/react-native-nitro-theme-transition/issues"

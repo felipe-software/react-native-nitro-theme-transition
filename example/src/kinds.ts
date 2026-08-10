@@ -1,5 +1,6 @@
 /** Display metadata for every effect, wipe direction and iris shape. */
 import type {
+  ThemeTransitionBlurStyle,
   ThemeTransitionDirection,
   ThemeTransitionKind,
   ThemeTransitionShape,
@@ -61,9 +62,15 @@ export const KIND_META: Record<
   },
   blur: {
     label: 'Blur',
-    hint: 'Blurs and recedes as it dissolves.',
+    hint: 'Blurs away, or wipes the new theme in out of focus.',
     icon: 'water-outline',
     native: 'UIVisualEffectView · RenderEffect.createBlurEffect (API 31+)',
+  },
+  liquidGlass: {
+    label: 'Liquid glass',
+    hint: 'A glass sheet slides down, swaps, and slides back up.',
+    icon: 'prism-outline',
+    native: 'UIGlassEffect (iOS 26+) · falls back to blur elsewhere',
   },
   zoom: {
     label: 'Zoom',
@@ -101,6 +108,14 @@ export const KIND_META: Record<
     icon: 'diamond-outline',
     native: 'same mask ladder, Voronoi cells in random order',
   },
+};
+
+export const BLUR_STYLE_META: Record<
+  ThemeTransitionBlurStyle,
+  { label: string; icon: IoniconName }
+> = {
+  uniform: { label: 'All at once', icon: 'water-outline' },
+  sweep: { label: 'Swept', icon: 'arrow-down-outline' },
 };
 
 export const SHAPE_META: Record<ThemeTransitionShape, { label: string; icon: IoniconName }> = {

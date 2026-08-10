@@ -44,6 +44,7 @@ namespace margelo::nitro::nitrothemetransition {
     SHATTER      SWIFT_NAME(shatter) = 12,
     IRIS      SWIFT_NAME(iris) = 13,
     ZOOM      SWIFT_NAME(zoom) = 14,
+    LIQUIDGLASS      SWIFT_NAME(liquidglass) = 15,
   } CLOSED_ENUM;
 
 } // namespace margelo::nitro::nitrothemetransition
@@ -71,6 +72,7 @@ namespace margelo::nitro {
         case hashString("shatter"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::SHATTER;
         case hashString("iris"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::IRIS;
         case hashString("zoom"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::ZOOM;
+        case hashString("liquidGlass"): return margelo::nitro::nitrothemetransition::ThemeTransitionKind::LIQUIDGLASS;
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert \"" + unionValue + "\" to enum ThemeTransitionKind - invalid value!");
       }
@@ -92,6 +94,7 @@ namespace margelo::nitro {
         case margelo::nitro::nitrothemetransition::ThemeTransitionKind::SHATTER: return JSIConverter<std::string>::toJSI(runtime, "shatter");
         case margelo::nitro::nitrothemetransition::ThemeTransitionKind::IRIS: return JSIConverter<std::string>::toJSI(runtime, "iris");
         case margelo::nitro::nitrothemetransition::ThemeTransitionKind::ZOOM: return JSIConverter<std::string>::toJSI(runtime, "zoom");
+        case margelo::nitro::nitrothemetransition::ThemeTransitionKind::LIQUIDGLASS: return JSIConverter<std::string>::toJSI(runtime, "liquidGlass");
         default: [[unlikely]]
           throw std::invalid_argument("Cannot convert ThemeTransitionKind to JS - invalid value: "
                                     + std::to_string(static_cast<int>(arg)) + "!");
@@ -118,6 +121,7 @@ namespace margelo::nitro {
         case hashString("shatter"):
         case hashString("iris"):
         case hashString("zoom"):
+        case hashString("liquidGlass"):
           return true;
         default:
           return false;

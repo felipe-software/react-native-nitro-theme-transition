@@ -12,7 +12,7 @@ implementation changes.
 
 ## 1. What it does
 
-Animates a theme change instead of snapping it. Fifteen effects, all running on
+Animates a theme change instead of snapping it. Sixteen effects, all running on
 the OS render thread rather than in JavaScript.
 
 They come from four families, and the families matter far more than the count —
@@ -23,7 +23,7 @@ adding a kind is nearly always a matter of picking one and changing a few lines:
 | Shape mask | `circularReveal`, `circularRevealInverse`, `iris` | a shrinking outline at a point |
 | Straight boundaries | `slide`, `split`, `barnDoor`, `blinds` | half-planes sweeping along a normal (§4c) |
 | Mask ladder | `dissolve`, `stripes`, `ripple`, `shatter` | a per-cell disappearing ORDER, pre-built (§4d) |
-| Whole-layer | `fade`, `zoom`, `blur`, `pixlated` | animate the copy itself |
+| Whole-layer | `fade`, `zoom`, `blur`, `liquidGlass`, `pixlated` | animate the copy itself |
 
 No Skia, no Reanimated, no JS animation library. The only dependency is Nitro.
 
@@ -245,8 +245,9 @@ Per kind:
 | `split`                 | two half-planes parting from the centre (see §4c)                       |
 | `barnDoor`              | one slab closing on the centre — `split` run the other way (see §4c)    |
 | `blinds`                | `bands` slabs, each wiping across itself (see §4c)                      |
-| `blur`                  | `UIVisualEffectView` animated from `nil` effect, + alpha and 1.04 scale |
+| `blur`                  | `UIVisualEffectView` from `nil`; `blurStyle` decides uniform vs swept   |
 | `zoom`                  | `alpha` and a 1.12 scale — the cheapest kind here                       |
+| `liquidGlass`           | a sliding `UIGlassEffect` sheet, swap held behind it (§4e), iOS 26+     |
 | `pixlated`              | dual mosaiced layers + alpha crossfade (see §4b)                        |
 | `dissolve` `stripes` `ripple` `shatter` | `CAKeyframeAnimation` on a mask layer's `contents` (see §4d) |
 
@@ -377,6 +378,19 @@ Consequences worth knowing:
   mask on a layer that clips to its own bounds. Intersecting the half-plane with
   the rectangle instead would change the point count as the line crossed each
   corner — which would break the interpolation the next point depends on.
+- ⚠ **A slab must never close completely.** `blinds` and `barnDoor` both END with
+  their bands at zero height, and a zero-area subpath has nothing to draw — so
+  Core Graphics is free to drop it. That changes the path's STRUCTURE between the
+  two ends of the animation, and Core Animation then interpolates points against
+  the wrong subpath. The symptom is specific and worth recognising: **level
+  louvres come out as slanted wedges**, because one corner of a band ends up
+  paired with a corner of its neighbour. `Sweep.slab` keeps a hundredth of a
+  point of thickness, which is far below one device pixel. This is the same trap
+  the circle avoids by clamping its radius to `0.01` rather than `0` — the two
+  fixes are the same fix, and anything new that collapses a subpath needs it
+  too. Android is immune: it rebuilds the clip path per frame and never
+  interpolates one, which is exactly why this shipped broken on one platform
+  only.
 - **iOS keeps this in Core Animation.** Both endpoints are the same structure (a
   4-point quad, or two of them), and only `threshold` differs, so a `path`
   animation interpolates it as a pure translation. The sweep is submitted once
@@ -484,6 +498,54 @@ interpolator; iOS resamples the ladder onto a uniform keyframe timeline
 for an equal slice of the duration. Baking the curve into the ladder *as well*
 would apply it twice, and the effect would visibly stall at the start.
 
+### 4e. `liquidGlass` — a sliding sheet, iOS 26+
+
+A sheet of glass comes down over the screen, **holds** while the theme changes
+behind it, then goes back up the way it came. `UIGlassEffect` is iOS 26+, so
+everything else — older iOS, and all of Android — falls back to `blur`.
+
+#### ⚠ The hold is the whole design
+
+Three beats, strictly in order: the sheet arrives, it stops, the old screen fades
+out behind it, and only then does it leave. **Overlap the fade with either slide
+and it stops being a sheet of glass doing a job and becomes a wipe again.**
+
+That is the difference this kind took six attempts to find. The sheet never
+reveals anything by passing over it — the old screen is still there, intact,
+while it travels. What changes underneath happens while the glass is stationary.
+A pane being drawn over a screen; not a mask sweeping across one.
+
+#### Six rejected versions, and what they have in common
+
+| Version | Why it was rejected |
+| --- | --- |
+| A band sweeping across | A wipe with a glass edge — the boundary revealed as it passed. |
+| Eighteen small droplets blooming | At that size refraction reads as a rendering glitch, and on a dark theme the beads barely registered. |
+| The same droplets, erasing rather than fading | Fixed the mud; the noise remained. |
+| Five lobes bursting apart | Technically the most interesting, and still busy — five overlapping shapes give the eye nowhere to rest. |
+| One pane opening from the touch | Simple at last, and still a shape crossing the screen. |
+| A fixed lens, content collapsing behind it | The glass finally stopped moving, but the motion behind it read as a plain scale. |
+
+Every one of the first five had **the glass revealing something as it moved**.
+The current version is the first where the glass and the swap never happen at the
+same time.
+
+#### Two details worth keeping
+
+**The sheet is taller than the screen, and only its BOTTOM corners are rounded**,
+so it reads as a physical pane with a leading edge. The overhang keeps those
+corners off screen while it is covering — without it they leave two lit notches
+of the old theme showing through at the bottom of the screen during the swap.
+
+**It uses `UIGlassEffect.Style.clear`, not `.regular`.** The regular style is a
+frosted material: it hides what is behind it, which made the covered stretch read
+as a flat grey panel and buried the very swap it is meant to be presenting. Clear
+keeps the screen readable through the sheet and puts the emphasis on refraction
+and the lit rim, which is what makes it look like glass rather than like a scrim.
+The trade is that the fade underneath is genuinely visible now — that is the
+point of the middle beat, but it does mean the swap can no longer hide behind
+frost, which is another reason it must not overlap either slide.
+
 ## 5. How it works on Android
 
 | Step    | API                                                                                       |
@@ -532,7 +594,7 @@ Per kind:
 | `circularRevealInverse` | `Canvas.clipOutPath` in `onDraw` (no platform API for it)                      |
 | `slide`                 | `Canvas.clipRect` when un-tilted, `clipOutPath` on a half-plane when not       |
 | `split`                 | `Canvas.clipPath` over two half-planes (§4c)                                   |
-| `blur`                  | `RenderEffect.createBlurEffect`, API 31+; below that, same motion without blur |
+| `blur`                  | `RenderEffect.createBlurEffect`, API 31+; below that, same motion without blur. `blurStyle` decides uniform vs swept |
 | `pixlated`              | dual `SnapshotView` mosaics + alpha (see below)                                |
 | `dissolve`              | pre-built `ALPHA_8` masks composited `DST_IN` in a `saveLayer` (§4d)           |
 
@@ -842,6 +904,13 @@ frames could be read):
   and `ripple`: the three differ only in the threshold function, and everything
   after it is the same code
 - **`zoom`**, **`blinds`** and **`iris`** all play and select correctly
+- **`blinds` after the degenerate-slab fix** (§4c): six level, parallel louvres
+  of uniform thickness, captured mid-sweep. Before the fix the same capture
+  showed slanted wedges of varying thickness
+- ⚠ **`liquidGlass` is NOT visually verified in its current form.** The lens
+  version compiles and the earlier shape-based versions were each captured frame
+  by frame, but synthetic input to the simulator stopped responding before this
+  one could be recorded. Play it before trusting it
 
 **Verified on iOS after the performance rewrite** (iPhone 17 Pro simulator,
 iOS 26.5, `expo run:ios` against the working-tree pod):

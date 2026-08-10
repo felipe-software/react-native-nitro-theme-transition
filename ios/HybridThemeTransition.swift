@@ -150,6 +150,9 @@ private enum Timing {
     // More boundaries to follow than a plain wipe has.
     case .blinds: return 300
     case .blur: return 300
+    // Three beats in sequence — down, hold for the swap, back up — so it needs
+    // noticeably more room than kinds that do one continuous motion.
+    case .liquidglass: return 620
     // Grain has no shape to follow, so the eye reads it as texture rather than
     // motion until it has had time to thin out.
     case .dissolve, .stripes: return 420
@@ -245,6 +248,23 @@ private enum Sweep {
     let reach = 2 * (bounds.width + bounds.height)
     let perpendicular = CGVector(dx: -n.dy, dy: n.dx)
 
+    /*
+     * ⚠ Never let the band close completely.
+     *
+     * A zero-area subpath has nothing to draw, and Core Graphics is free to drop
+     * it — which changes the path's STRUCTURE between the two ends of the
+     * animation, so Core Animation ends up interpolating points against the
+     * wrong subpath. This is the same trap the circle avoids by clamping its
+     * radius to 0.01 rather than 0, and it is exactly what made `blinds` come
+     * out as slanted wedges instead of level louvres: every one of its slabs
+     * collapses at the end, where a wipe's half-plane merely moves. `barnDoor`
+     * has the same ending and was quietly wrong for the same reason.
+     *
+     * The surviving sliver is a hundredth of a point — far below one device
+     * pixel, so it is never visible.
+     */
+    let near = min(from, to - 0.01)
+
     func corner(_ along: CGFloat, _ across: CGFloat) -> CGPoint {
       CGPoint(
         x: n.dx * along + perpendicular.dx * across,
@@ -253,8 +273,8 @@ private enum Sweep {
     }
 
     let path = UIBezierPath()
-    path.move(to: corner(from, reach))
-    path.addLine(to: corner(from, -reach))
+    path.move(to: corner(near, reach))
+    path.addLine(to: corner(near, -reach))
     path.addLine(to: corner(to, -reach))
     path.addLine(to: corner(to, reach))
     path.close()
@@ -488,6 +508,32 @@ private enum GrainMask {
   private static var cache: [(key: Key, ladder: [CGImage])] = []
   private static let cacheLimit = 4
 
+  /**
+   * Drops every cached ladder under memory pressure.
+   *
+   * A full cache is around 9 MB — forty RGBA masks per entry, four entries —
+   * held for the life of the process so that repeated transitions never rebuild
+   * them. That is a deliberate trade, but it is not worth a jetsam kill, and
+   * the only cost of dropping them is that the next transition of that kind
+   * spends a few milliseconds on a background queue rebuilding one.
+   *
+   * Registered once, lazily, the first time a ladder is stored — so an app that
+   * never uses these kinds never installs an observer.
+   */
+  private static var memoryObserver: NSObjectProtocol?
+
+  private static func observeMemoryPressure() {
+    guard memoryObserver == nil else { return }
+
+    memoryObserver = NotificationCenter.default.addObserver(
+      forName: UIApplication.didReceiveMemoryWarningNotification,
+      object: nil,
+      queue: .main
+    ) { _ in
+      cache.removeAll()
+    }
+  }
+
   static func grid(forPoints size: CGSize) -> (cols: Int, rows: Int) {
     (
       max(1, Int(ceil(size.width / cellPoints))),
@@ -508,6 +554,7 @@ private enum GrainMask {
 
   /// Main-thread only.
   static func store(_ ladder: [CGImage], for key: Key) {
+    observeMemoryPressure()
     cache.removeAll { $0.key == key }
     cache.insert((key, ladder), at: 0)
     if cache.count > cacheLimit { cache.removeLast(cache.count - cacheLimit) }
@@ -1500,7 +1547,15 @@ final class HybridThemeTransition: HybridThemeTransitionSpec {
     case .blinds:
       animateSweep(transition, options: options, mode: .blinds, duration: duration, finish: finish)
     case .blur:
-      animateBlur(transition, duration: duration, finish: finish)
+      animateBlur(transition, options: options, duration: duration, finish: finish)
+    case .liquidglass:
+      if #available(iOS 26.0, *) {
+        animateLiquidGlass(transition, options: options, duration: duration, finish: finish)
+      } else {
+        // Liquid Glass is the material; without it there is nothing to refract
+        // through, and a blur is the closest thing this OS has.
+        animateBlur(transition, options: options, duration: duration, finish: finish)
+      }
     case .zoom:
       animateZoom(transition, duration: duration, finish: finish)
     case .pixlated:
@@ -1703,6 +1758,128 @@ final class HybridThemeTransition: HybridThemeTransitionSpec {
   }
 
   /**
+   * A sheet of glass slides down over the screen, the theme changes behind it,
+   * and the sheet slides back up.
+   *
+   * ── Three beats, in order ──
+   *   1. The sheet comes down from above until it covers everything.
+   *   2. It HOLDS, and the old screen fades out behind it — so the swap happens
+   *      entirely out of sight, refracted.
+   *   3. Only once the swap is finished does the sheet go back up the way it
+   *      came.
+   *
+   * The hold is the whole thing. Overlap the fade with either slide and it stops
+   * being a sheet of glass doing a job and becomes a wipe again — which is
+   * exactly how five earlier versions read.
+   *
+   * ── The sheet is an object, not a boundary ──
+   * It never reveals anything by passing over it: the old screen is still there,
+   * intact, while the sheet travels. What changes underneath happens while it is
+   * stationary. That is the difference between a pane of glass being drawn over
+   * a screen and a mask sweeping across one, and it is the reason this is the
+   * version that works.
+   *
+   * The sheet is taller than the screen and its BOTTOM corners are rounded, so
+   * it reads as a physical pane with a leading edge — and the overhang keeps
+   * those corners off screen while it is covering, where they would otherwise
+   * leave two lit notches of the old theme showing through.
+   *
+   * Everything is a layer animation submitted once, so nothing runs per frame.
+   */
+  @available(iOS 26.0, *)
+  private func animateLiquidGlass(
+    _ transition: Transition,
+    options: ThemeTransitionOptions,
+    duration: Double,
+    finish: @escaping () -> Void
+  ) {
+    let view = transition.view
+    let bounds = view.bounds
+
+    guard let host = view.superview, bounds.width > 0, bounds.height > 0 else {
+      animateBlur(transition, options: options, duration: duration, finish: finish)
+      return
+    }
+
+    // Enough to keep the rounded bottom corners below the screen once the sheet
+    // has arrived.
+    let overhang: CGFloat = 56
+    let sheet = bounds.height + overhang
+
+    /*
+     * `.clear` rather than `.regular`.
+     *
+     * The regular style is a frosted material: it hides what is behind it, which
+     * made the covered stretch read as a flat grey panel and buried the swap it
+     * is supposed to be showing. Clear keeps the screen readable through the
+     * sheet and puts the emphasis on refraction and the lit rim, which is what
+     * makes it look like glass rather than like a scrim.
+     *
+     * The trade is that the fade underneath is now genuinely visible — which is
+     * the point of the middle beat, but it does mean the swap cannot hide behind
+     * frost. That is why it is eased, and why it gets a stretch of the timeline
+     * to itself rather than overlapping either slide.
+     */
+    let glass = UIVisualEffectView(effect: UIGlassEffect(style: .clear))
+    glass.frame = CGRect(x: 0, y: 0, width: bounds.width, height: sheet)
+    glass.isUserInteractionEnabled = false
+    glass.clipsToBounds = true
+    glass.layer.cornerRadius = 34
+    glass.layer.cornerCurve = .continuous
+    // The leading edge only — a pane, not a floating card.
+    glass.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+
+    host.insertSubview(glass, aboveSubview: view)
+
+    // Down, hold, up. The hold is a little longer than either slide, so the
+    // swap never looks rushed and the sheet never looks like it is scraping the
+    // theme off on its way past.
+    let covered = 0.34
+    let swapped = 0.64
+
+    let hold = CAMediaTimingFunction(name: .linear)
+
+    let travel = CAKeyframeAnimation(keyPath: "transform.translation.y")
+    travel.values = [-sheet, 0, 0, -sheet]
+    travel.keyTimes = [0, NSNumber(value: covered), NSNumber(value: swapped), 1]
+    travel.timingFunctions = [
+      // Arrives on the shared curve, like every other kind here…
+      Curve.media,
+      hold,
+      // …and leaves accelerating, so the exit reads as the sheet being pulled
+      // rather than drifting off.
+      CAMediaTimingFunction(name: .easeIn),
+    ]
+    travel.duration = duration
+    // Rests off the top, which is where it has to end up.
+    glass.layer.transform = CATransform3DMakeTranslation(0, -sheet, 0)
+    glass.layer.add(travel, forKey: "themeTransitionSheet")
+
+    CATransaction.begin()
+    CATransaction.setCompletionBlock {
+      transition.cancelEffect = nil
+      glass.removeFromSuperview()
+      finish()
+    }
+
+    let swap = CAKeyframeAnimation(keyPath: "opacity")
+    swap.values = [1, 1, 0, 0]
+    swap.keyTimes = [0, NSNumber(value: covered), NSNumber(value: swapped), 1]
+    swap.timingFunctions = [
+      hold,
+      CAMediaTimingFunction(name: .easeInEaseOut),
+      hold,
+    ]
+    swap.duration = duration
+    view.layer.opacity = 0
+    view.layer.add(swap, forKey: "themeTransitionSwap")
+
+    CATransaction.commit()
+
+    transition.cancelEffect = { [weak glass] in glass?.removeFromSuperview() }
+  }
+
+  /**
    * The old screen scales up and fades out.
    *
    * The cheapest kind here by a distance — two animatable properties and nothing
@@ -1844,22 +2021,83 @@ final class HybridThemeTransition: HybridThemeTransitionSpec {
    */
   private func animateBlur(
     _ transition: Transition,
+    options: ThemeTransitionOptions,
     duration: Double,
     finish: @escaping () -> Void
   ) {
     let view = transition.view
 
-    let effectView = UIVisualEffectView(effect: nil)
-    effectView.frame = view.bounds
-    effectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-    effectView.isUserInteractionEnabled = false
-    view.addSubview(effectView)
+    guard options.blurStyle == .sweep, let host = view.superview else {
+      let effectView = UIVisualEffectView(effect: nil)
+      effectView.frame = view.bounds
+      effectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+      effectView.isUserInteractionEnabled = false
+      // A subview, so it travels with the snapshot's scale.
+      view.addSubview(effectView)
 
-    run(transition, duration: duration, finish: finish) { snapshot in
-      // Adapts to light/dark, so the blur tints toward the incoming theme.
-      effectView.effect = UIBlurEffect(style: .systemThinMaterial)
-      snapshot.alpha = 0
-      snapshot.transform = CGAffineTransform(scaleX: 1.04, y: 1.04)
+      run(transition, duration: duration, finish: finish) { snapshot in
+        // Adapts to light/dark, so the blur tints toward the incoming theme.
+        effectView.effect = UIBlurEffect(style: .systemThinMaterial)
+        snapshot.alpha = 0
+        snapshot.transform = CGAffineTransform(scaleX: 1.04, y: 1.04)
+      }
+      return
+    }
+
+    /*
+     * `.sweep`: a wipe that brings the NEW theme in out of focus, and pulls it
+     * sharp as it arrives.
+     *
+     * ── The blur is on the incoming side, not the outgoing one ──
+     * This is the part that is easy to get backwards, and the first version did.
+     * The old screen is never blurred at all — it stays crisp right up to the
+     * edge and is simply taken away by the mask. What is out of focus is the
+     * theme arriving behind it, which sharpens as the wipe crosses. Blurring the
+     * outgoing copy instead produces the opposite reading: the screen you are
+     * leaving goes soft, which looks like it is being smeared off rather than
+     * like the new one is coming into focus.
+     *
+     * ── Which means the blur cannot live on the snapshot ──
+     * The incoming theme is the LIVE app, underneath everything we own. So the
+     * effect view is a sibling BELOW the snapshot: its backdrop is the app
+     * window, and it is only visible where the mask has already taken the old
+     * screen away. Animating its `effect` to `nil` ramps the blur DOWN, which is
+     * the whole point — high at first, gone by the end.
+     */
+    let bounds = view.bounds
+
+    let incoming = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+    incoming.frame = bounds
+    incoming.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    incoming.isUserInteractionEnabled = false
+    host.insertSubview(incoming, belowSubview: view)
+
+    // Finishes a little before the wipe does, so the last sliver to be uncovered
+    // is already sharp and the transition does not end on a soft frame.
+    let sharpen = UIViewPropertyAnimator(
+      duration: duration * 0.85,
+      controlPoint1: Curve.controlPoint1,
+      controlPoint2: Curve.controlPoint2
+    ) {
+      incoming.effect = nil
+    }
+
+    transition.animator = sharpen
+    transition.cancelEffect = { [weak incoming] in incoming?.removeFromSuperview() }
+    sharpen.startAnimation()
+
+    let normal = Sweep.normal(for: options.direction, angleDeg: options.angleDeg)
+    let span = Sweep.projection(of: bounds, along: normal)
+
+    animateMask(
+      transition,
+      from: Sweep.halfPlane(bounds, n: normal, threshold: span.min).cgPath,
+      to: Sweep.halfPlane(bounds, n: normal, threshold: span.max).cgPath,
+      duration: duration
+    ) {
+      transition.cancelEffect = nil
+      incoming.removeFromSuperview()
+      finish()
     }
   }
 

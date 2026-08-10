@@ -87,6 +87,9 @@ namespace margelo::nitro::nitrothemetransition {
         case ThemeTransitionKind::ZOOM:
           static const auto fieldZOOM = clazz->getStaticField<JThemeTransitionKind>("ZOOM");
           return clazz->getStaticFieldValue(fieldZOOM);
+        case ThemeTransitionKind::LIQUIDGLASS:
+          static const auto fieldLIQUIDGLASS = clazz->getStaticField<JThemeTransitionKind>("LIQUIDGLASS");
+          return clazz->getStaticFieldValue(fieldLIQUIDGLASS);
         default:
           std::string stringValue = std::to_string(static_cast<int>(value));
           throw std::invalid_argument("Invalid enum value (" + stringValue + "!");

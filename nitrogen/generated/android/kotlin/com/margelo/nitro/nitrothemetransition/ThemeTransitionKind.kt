@@ -30,7 +30,8 @@ enum class ThemeTransitionKind(@DoNotStrip @Keep val value: Int) {
   RIPPLE(11),
   SHATTER(12),
   IRIS(13),
-  ZOOM(14);
+  ZOOM(14),
+  LIQUIDGLASS(15);
 
   companion object
 }

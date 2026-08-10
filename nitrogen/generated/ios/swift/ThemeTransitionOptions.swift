@@ -18,8 +18,8 @@ public extension ThemeTransitionOptions {
   /**
    * Create a new instance of `ThemeTransitionOptions`.
    */
-  init(kind: ThemeTransitionKind, durationMs: Double, originX: Double, originY: Double, settleFrames: Double, direction: ThemeTransitionDirection, angleDeg: Double, shape: ThemeTransitionShape, bands: Double) {
-    self.init(kind, durationMs, originX, originY, settleFrames, direction, angleDeg, shape, bands)
+  init(kind: ThemeTransitionKind, durationMs: Double, originX: Double, originY: Double, settleFrames: Double, direction: ThemeTransitionDirection, angleDeg: Double, shape: ThemeTransitionShape, blurStyle: ThemeTransitionBlurStyle, bands: Double) {
+    self.init(kind, durationMs, originX, originY, settleFrames, direction, angleDeg, shape, blurStyle, bands)
   }
 
   @inline(__always)
@@ -60,6 +60,11 @@ public extension ThemeTransitionOptions {
   @inline(__always)
   var shape: ThemeTransitionShape {
     return self.__shape
+  }
+  
+  @inline(__always)
+  var blurStyle: ThemeTransitionBlurStyle {
+    return self.__blurStyle
   }
   
   @inline(__always)

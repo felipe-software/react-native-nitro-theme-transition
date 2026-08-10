@@ -13,6 +13,7 @@
  */
 import { useSyncExternalStore } from 'react';
 import type {
+  ThemeTransitionBlurStyle,
   ThemeTransitionDirection,
   ThemeTransitionKind,
   ThemeTransitionShape,
@@ -30,6 +31,8 @@ export type Settings = {
   angleDeg: number;
   /** Outline `iris` collapses into. */
   shape: ThemeTransitionShape;
+  /** How `blur` applies itself. */
+  blurStyle: ThemeTransitionBlurStyle;
   /** How many louvres `blinds` cuts the screen into. */
   bands: number;
   durationMs: number;
@@ -61,6 +64,7 @@ const DEFAULT_SETTINGS: Settings = {
   direction: 'bottom',
   angleDeg: 0,
   shape: 'hexagon',
+  blurStyle: 'uniform',
   bands: 6,
   // Longer than a production app would use (300–450ms) so each effect is
   // actually watchable.

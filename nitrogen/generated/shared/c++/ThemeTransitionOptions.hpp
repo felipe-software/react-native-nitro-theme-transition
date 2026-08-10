@@ -34,10 +34,13 @@ namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionKind;
 namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionDirection; }
 // Forward declaration of `ThemeTransitionShape` to properly resolve imports.
 namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionShape; }
+// Forward declaration of `ThemeTransitionBlurStyle` to properly resolve imports.
+namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionBlurStyle; }
 
 #include "ThemeTransitionKind.hpp"
 #include "ThemeTransitionDirection.hpp"
 #include "ThemeTransitionShape.hpp"
+#include "ThemeTransitionBlurStyle.hpp"
 
 namespace margelo::nitro::nitrothemetransition {
 
@@ -54,11 +57,12 @@ namespace margelo::nitro::nitrothemetransition {
     ThemeTransitionDirection direction     SWIFT_PRIVATE;
     double angleDeg     SWIFT_PRIVATE;
     ThemeTransitionShape shape     SWIFT_PRIVATE;
+    ThemeTransitionBlurStyle blurStyle     SWIFT_PRIVATE;
     double bands     SWIFT_PRIVATE;
 
   public:
     ThemeTransitionOptions() = default;
-    explicit ThemeTransitionOptions(ThemeTransitionKind kind, double durationMs, double originX, double originY, double settleFrames, ThemeTransitionDirection direction, double angleDeg, ThemeTransitionShape shape, double bands): kind(kind), durationMs(durationMs), originX(originX), originY(originY), settleFrames(settleFrames), direction(direction), angleDeg(angleDeg), shape(shape), bands(bands) {}
+    explicit ThemeTransitionOptions(ThemeTransitionKind kind, double durationMs, double originX, double originY, double settleFrames, ThemeTransitionDirection direction, double angleDeg, ThemeTransitionShape shape, ThemeTransitionBlurStyle blurStyle, double bands): kind(kind), durationMs(durationMs), originX(originX), originY(originY), settleFrames(settleFrames), direction(direction), angleDeg(angleDeg), shape(shape), blurStyle(blurStyle), bands(bands) {}
 
   public:
     friend bool operator==(const ThemeTransitionOptions& lhs, const ThemeTransitionOptions& rhs) = default;
@@ -82,6 +86,7 @@ namespace margelo::nitro {
         JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionDirection>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "direction"))),
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "angleDeg"))),
         JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionShape>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "shape"))),
+        JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionBlurStyle>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "blurStyle"))),
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "bands")))
       );
     }
@@ -95,6 +100,7 @@ namespace margelo::nitro {
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "direction"), JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionDirection>::toJSI(runtime, arg.direction));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "angleDeg"), JSIConverter<double>::toJSI(runtime, arg.angleDeg));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "shape"), JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionShape>::toJSI(runtime, arg.shape));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "blurStyle"), JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionBlurStyle>::toJSI(runtime, arg.blurStyle));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "bands"), JSIConverter<double>::toJSI(runtime, arg.bands));
       return obj;
     }
@@ -114,6 +120,7 @@ namespace margelo::nitro {
       if (!JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionDirection>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "direction")))) return false;
       if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "angleDeg")))) return false;
       if (!JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionShape>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "shape")))) return false;
+      if (!JSIConverter<margelo::nitro::nitrothemetransition::ThemeTransitionBlurStyle>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "blurStyle")))) return false;
       if (!JSIConverter<double>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "bands")))) return false;
       return true;
     }

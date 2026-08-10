@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iris — react-native-nitro-theme-transition</title>
+    <meta name="description" content="Collapses into a hexagon, diamond or squircle. Every option the iris theme transition takes, and how it is implemented on iOS and Android." />
+    <meta property="og:title" content="iris — react-native-nitro-theme-transition" />
+    <meta property="og:description" content="Collapses into a hexagon, diamond or squircle. Every option the iris theme transition takes, and how it is implemented on iOS and Android." />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🌗</text></svg>" />
+    <link rel="preload" as="video" href="../media/iris.mp4" />
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="crumbs">
+        <a href="../index.html">← All sixteen effects</a>
+        <button class="btn" id="toggle" type="button" aria-label="Toggle colour scheme">
+          <span id="toggle-icon">🌙</span> <span id="toggle-label">Dark</span>
+        </button>
+      </nav>
+
+      <article>
+        <h1><code>iris</code></h1>
+        <p class="lede">Collapses into a hexagon, diamond or squircle.</p>
+
+        <video class="hero" muted loop playsinline autoplay preload="auto"
+               poster="../poster/iris.jpg"
+               aria-label="iris transition running on Android and iOS">
+          <source src="../media/iris.mp4" type="video/mp4" />
+        </video>
+        <p class="caption">
+          The <a href="https://github.com/saleh2001k/react-native-nitro-theme-transition/tree/main/example">example app</a> on an Android emulator and an iOS
+          simulator at once. Click to replay.
+        </p>
+
+        <p class="body"><code>circularReveal</code> with a shape other than a circle. Every outline is a polygon with a <strong>fixed vertex count</strong> that scales linearly with the radius, which is what lets Core Animation interpolate the mask path directly.</p>
+
+        <h2>Options it takes</h2>
+        <table class="opts">
+          <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>What it does here</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="opt">origin</code></td>
+              <td><code class="type">{ x: number; y: number }</code></td>
+              <td><code>screen centre</code></td>
+              <td>Where the effect starts, in dp. Pass a touch’s <code>pageX/pageY</code> as-is — the offset inside a modal or form sheet is corrected natively.</td>
+            </tr>
+            <tr>
+              <td><code class="opt">shape</code></td>
+              <td><code class="type">'circle' | 'diamond' | 'hexagon' | 'roundedRect'</code></td>
+              <td><code>'hexagon'</code></td>
+              <td>The outline the old screen collapses into.
+              <dl class="values"><dt><code>'circle'</code></dt><dd>identical to <code>circularReveal</code></dd><dt><code>'diamond'</code></dt><dd>four-vertex rhombus</dd><dt><code>'hexagon'</code></dt><dd>six-vertex polygon (default)</dd><dt><code>'roundedRect'</code></dt><dd>squircle</dd></dl></td>
+            </tr>
+            <tr>
+              <td><code class="opt">durationMs</code></td>
+              <td><code class="type">number</code></td>
+              <td><code>650</code></td>
+              <td>Animation length. Clamped up to this kind’s floor; <code>0</code> means no animation and is never clamped.</td>
+            </tr>
+            <tr>
+              <td><code class="opt">settleFrames</code></td>
+              <td><code class="type">number</code></td>
+              <td><code>2</code></td>
+              <td>Display frames to hold the snapshot before revealing, so the theme swap has painted underneath.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="ignored">Ignored by this kind: <code>direction</code>, <code>angleDeg</code>, <code>blurStyle</code>, <code>bands</code>. Passing them is harmless.</p>
+
+        <h2>Minimum duration</h2>
+        <p class="body">
+          A request below <strong>260ms</strong> is clamped up to it, natively, so both
+          platforms agree. Below that floor a full-screen copy coming apart has too few frames to
+          read as motion — the eye gets the start and the end and nothing in between, which looks
+          like a flicker rather than a fast transition. <code>durationMs: 0</code> still means “no
+          animation” and is never clamped.
+        </p>
+
+        <h2>Usage</h2>
+        <pre class="code"><code>withThemeTransition(applyTheme, {
+  kind: 'iris',
+  durationMs: 650,
+  origin: { x: pageX, y: pageY },
+  shape: 'hexagon',
+});</code></pre>
+
+        <h2>How it is done</h2>
+        <table class="opts native">
+          <tbody>
+            <tr><th>iOS</th><td>the same mask, a fixed-vertex polygon</td></tr>
+            <tr><th>Android</th><td><code>Canvas.clipPath</code> on the same polygon</td></tr>
+          </tbody>
+        </table>
+
+      </article>
+
+      <nav class="pager">
+        <a href="circularRevealInverse.html">← <code>circularRevealInverse</code></a>
+        <a href="slide.html"><code>slide</code> →</a>
+      </nav>
+
+      <footer>
+        MIT © <a href="https://salehos.com">Saleh Almashni</a> ·
+        <a href="https://github.com/saleh2001k/react-native-nitro-theme-transition">source</a> · built on
+        <a href="https://nitro.margelo.com">Nitro Modules</a>
+      </footer>
+    </div>
+    <script src="../site.js"></script>
+  </body>
+</html>

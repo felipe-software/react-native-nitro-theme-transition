@@ -3,8 +3,10 @@ import type { HybridObject } from 'react-native-nitro-modules';
 /**
  * Which animation plays as the old screen is taken away.
  *
- * All of them are UIKit/Core Animation on iOS, so the render server interpolates
- * them and none costs per-frame CPU or JavaScript work:
+ * None of them costs JavaScript work. Most are submitted to the OS once and
+ * interpolated by the render thread, so even a blocked JS thread cannot stutter
+ * them; `pixlated` is the exception, since its two mosaics have to be
+ * cross-faded against each other frame by frame.
  *
  *   fade            opacity to zero
  *   circularReveal  the old screen collapsing into a circle at `origin`
@@ -16,7 +18,8 @@ import type { HybridObject } from 'react-native-nitro-modules';
  *                   can be tilted with `angleDeg`
  *   split           the same edge, but TWO of them, parting from the centre —
  *                   the old screen retreats to both opposite edges at once
- *   blur            a `UIVisualEffectView` ramping up as the snapshot fades
+ *   blur            the old screen blurs as it goes — either all at once or
+ *                   swept along `direction`, see `blurStyle`
  *   pixlated        dual mosaic crossfade — colour swaps mid-transition behind
  *                   the pixels (Skia `pixelize` look, CPU mosaic on both platforms)
  *   dissolve        the old screen disintegrates into grain — cells drop out in
@@ -31,6 +34,11 @@ import type { HybridObject } from 'react-native-nitro-modules';
  *   ripple          concentric wavefronts expanding from `origin`
  *   shatter         the screen breaks into cells that fall away in random order
  *   zoom            the old screen scales up and fades
+ *   liquidGlass     a sheet of Liquid Glass slides down over the screen, the
+ *                   theme changes behind it while it holds, and then it slides
+ *                   back up.
+ *                   iOS 26+; every other platform and version falls back to
+ *                   `blur`, which is the closest material there is
  */
 export type ThemeTransitionKind =
   | 'fade'
@@ -47,7 +55,8 @@ export type ThemeTransitionKind =
   | 'ripple'
   | 'shatter'
   | 'iris'
-  | 'zoom';
+  | 'zoom'
+  | 'liquidGlass';
 
 /**
  * The outline `iris` collapses the old screen into. `iris` only.
@@ -62,7 +71,22 @@ export type ThemeTransitionKind =
 export type ThemeTransitionShape = 'circle' | 'diamond' | 'hexagon' | 'roundedRect';
 
 /**
- * The edge the OUTGOING screen leaves through. `slide` and `split` only.
+ * How `blur` applies itself. `blur` only.
+ *
+ *   uniform  the whole screen blurs and recedes at once, then fades out. The
+ *            original behaviour, and the default.
+ *   sweep    a wipe that brings the NEW theme in out of focus and pulls it
+ *            sharp as it arrives. The outgoing copy is never blurred — it is
+ *            simply taken away by the mask. Honours `direction` and `angleDeg`,
+ *            exactly as `slide` does.
+ */
+export type ThemeTransitionBlurStyle = 'uniform' | 'sweep';
+
+/**
+ * The edge the OUTGOING screen leaves through.
+ *
+ * Used by `slide`, `split`, `barnDoor`, `blinds` and `stripes`; ignored by
+ * everything else.
  *
  * `'bottom'` sweeps the boundary downward, so the last sliver of the old screen
  * sits against the bottom edge before it goes.
@@ -71,8 +95,8 @@ export type ThemeTransitionShape = 'circle' | 'diamond' | 'hexagon' | 'roundedRe
  * drawn as the line passes over them, so it reads as the new colours being
  * painted across the screen rather than the UI sliding away.
  *
- * For `split` this picks the AXIS rather than an edge, because both edges are
- * used: `'top'`/`'bottom'` part the screen horizontally, `'left'`/`'right'`
+ * For every kind but `slide` this picks the AXIS rather than an edge, because
+ * both edges are used: `'top'`/`'bottom'` work horizontally, `'left'`/`'right'`
  * vertically.
  */
 export type ThemeTransitionDirection = 'top' | 'bottom' | 'left' | 'right';
@@ -82,9 +106,11 @@ export interface ThemeTransitionOptions {
   /** Animation length in milliseconds. */
   durationMs: number;
   /**
-   * Centre of the circle for `circularReveal` / `circularRevealInverse`, in
-   * points relative to the root view. Ignored by the other kinds. Negative
-   * values mean "use the centre of the screen".
+   * Where the effect starts, in points relative to the root view.
+   *
+   * Used by the shape reveals — `circularReveal`, `circularRevealInverse` and
+   * `iris` — and by `ripple` and `liquidGlass`. Ignored by every other kind.
+   * Negative values mean "use the centre of the screen".
    */
   originX: number;
   originY: number;
@@ -96,10 +122,14 @@ export interface ThemeTransitionOptions {
    * OLD colours through the animation. Held natively so JS never has to time it.
    */
   settleFrames: number;
-  /** Edge the outgoing screen leaves through. `slide` and `split` only. */
+  /**
+   * Edge the outgoing screen leaves through — `slide`, `split`, `barnDoor`,
+   * `blinds`, `stripes`, and `blur` when `blurStyle` is `'sweep'`.
+   */
   direction: ThemeTransitionDirection;
   /**
-   * Tilt of the boundary line, in degrees. `slide` and `split` only.
+   * Tilt of the boundary line, in degrees — `slide`, `split`, `barnDoor`,
+   * `blinds`, and `blur` when `blurStyle` is `'sweep'`.
    *
    * Zero is the axis-aligned edge — horizontal for `top`/`bottom`, vertical for
    * `left`/`right`. A non-zero value rotates the LINE while keeping the sweep
@@ -113,6 +143,8 @@ export interface ThemeTransitionOptions {
   angleDeg: number;
   /** Outline the old screen collapses into. `iris` only. */
   shape: ThemeTransitionShape;
+  /** How the blur applies itself. `blur` only. */
+  blurStyle: ThemeTransitionBlurStyle;
   /**
    * How many parallel slabs the screen is cut into. `blinds` only.
    *
@@ -134,9 +166,8 @@ export interface ThemeTransitionOptions {
  *    resolves once it has been removed.
  *
  * The theme system is never involved in the animation, which is the whole point:
- * a Unistyles theme change is a full style re-evaluation plus a shadow-tree
- * commit, so it can never be driven per frame. See
- * `apps/mobile/src/docs/ThemeTransitionResearch.md`.
+ * a theme change is a full style re-evaluation plus a shadow-tree commit, so it
+ * can never be driven per frame.
  */
 export interface ThemeTransition extends HybridObject<{ ios: 'swift'; android: 'kotlin' }> {
   /**

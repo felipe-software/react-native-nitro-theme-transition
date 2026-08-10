@@ -15,6 +15,8 @@ namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionKind;
 namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionDirection; }
 // Forward declaration of `ThemeTransitionShape` to properly resolve imports.
 namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionShape; }
+// Forward declaration of `ThemeTransitionBlurStyle` to properly resolve imports.
+namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionBlurStyle; }
 
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/JPromise.hpp>
@@ -27,6 +29,8 @@ namespace margelo::nitro::nitrothemetransition { enum class ThemeTransitionShape
 #include "JThemeTransitionDirection.hpp"
 #include "ThemeTransitionShape.hpp"
 #include "JThemeTransitionShape.hpp"
+#include "ThemeTransitionBlurStyle.hpp"
+#include "JThemeTransitionBlurStyle.hpp"
 
 namespace margelo::nitro::nitrothemetransition {
 

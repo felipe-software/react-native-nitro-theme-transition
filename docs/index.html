@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>react-native-nitro-theme-transition — sixteen native theme transitions</title>
+    <meta name="description" content="GPU-driven theme-change transitions for React Native. Sixteen effects, no Skia, no Reanimated, no JS animation library." />
+    <meta property="og:title" content="react-native-nitro-theme-transition — sixteen native theme transitions" />
+    <meta property="og:description" content="GPU-driven theme-change transitions for React Native. Sixteen effects, no Skia, no Reanimated, no JS animation library." />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🌗</text></svg>" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="top">
+          <div>
+            <h1>react-native-nitro-theme-transition</h1>
+            <p class="lede">
+              Native, GPU-driven theme-change transitions for React Native — sixteen of them.
+              <strong>No Skia. No Reanimated. No JS animation library.</strong>
+            </p>
+            <p class="lede">
+              The animation is Core Animation on iOS and the platform animators on Android, both
+              interpolated by the OS render thread, so a busy JavaScript thread cannot drop a frame
+              of it.
+            </p>
+            <p class="byline">
+              Built by <a href="https://salehos.com">Saleh Almashni</a>
+            </p>
+          </div>
+        <button class="btn" id="toggle" type="button" aria-label="Toggle colour scheme">
+          <span id="toggle-icon">🌙</span> <span id="toggle-label">Dark</span>
+        </button>
+        </div>
+
+        <div class="cta">
+          <a class="btn" href="https://github.com/saleh2001k/react-native-nitro-theme-transition">GitHub</a>
+          <a class="btn" href="https://www.npmjs.com/package/react-native-nitro-theme-transition">npm</a>
+          <a class="btn" href="https://github.com/saleh2001k/react-native-nitro-theme-transition#usage">Docs</a>
+        </div>
+
+        <pre class="install">npm install react-native-nitro-theme-transition react-native-nitro-modules</pre>
+      </header>
+
+      <h2>The sixteen effects</h2>
+      <p class="sub">
+        Every clip is the same screen of the <a href="https://github.com/saleh2001k/react-native-nitro-theme-transition/tree/main/example">example app</a>,
+        running on an Android emulator and an iOS simulator at the same time. Open one for the
+        options it takes and how it is done natively.
+      </p>
+      <div class="grid">
+        <a class="card" href="effects/fade.html">
+          <video muted loop playsinline preload="none" poster="poster/fade.jpg"
+                 aria-label="fade transition running on Android and iOS">
+            <source src="media/fade.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>fade</code></span>
+            <span class="desc">Straight cross-dissolve.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/circularReveal.html">
+          <video muted loop playsinline preload="none" poster="poster/circle-in.jpg"
+                 aria-label="circularReveal transition running on Android and iOS">
+            <source src="media/circle-in.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>circularReveal</code></span>
+            <span class="desc">Collapses into a circle at your touch point.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/circularRevealInverse.html">
+          <video muted loop playsinline preload="none" poster="poster/circle-out.jpg"
+                 aria-label="circularRevealInverse transition running on Android and iOS">
+            <source src="media/circle-out.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>circularRevealInverse</code></span>
+            <span class="desc">A hole opens out from your touch and grows.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/iris.html">
+          <video muted loop playsinline preload="none" poster="poster/iris.jpg"
+                 aria-label="iris transition running on Android and iOS">
+            <source src="media/iris.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>iris</code></span>
+            <span class="desc">Collapses into a hexagon, diamond or squircle.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/slide.html">
+          <video muted loop playsinline preload="none" poster="poster/wipe.jpg"
+                 aria-label="slide transition running on Android and iOS">
+            <source src="media/wipe.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>slide</code></span>
+            <span class="desc">A straight edge paints the new theme across.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/split.html">
+          <video muted loop playsinline preload="none" poster="poster/split.jpg"
+                 aria-label="split transition running on Android and iOS">
+            <source src="media/split.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>split</code></span>
+            <span class="desc">Two edges part from the centre.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/barnDoor.html">
+          <video muted loop playsinline preload="none" poster="poster/barn-door.jpg"
+                 aria-label="barnDoor transition running on Android and iOS">
+            <source src="media/barn-door.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>barnDoor</code></span>
+            <span class="desc">Two edges close in; the old screen shrinks to a band.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/blinds.html">
+          <video muted loop playsinline preload="none" poster="poster/blinds.jpg"
+                 aria-label="blinds transition running on Android and iOS">
+            <source src="media/blinds.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>blinds</code></span>
+            <span class="desc">Parallel louvres wipe across themselves at once.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/blur.html">
+          <video muted loop playsinline preload="none" poster="poster/blur.jpg"
+                 aria-label="blur transition running on Android and iOS">
+            <source src="media/blur.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>blur</code></span>
+            <span class="desc">Blurs away, or wipes the new theme in out of focus.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/liquidGlass.html">
+          <video muted loop playsinline preload="none" poster="poster/liquid-glass.jpg"
+                 aria-label="liquidGlass transition running on Android and iOS">
+            <source src="media/liquid-glass.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>liquidGlass</code></span>
+            <span class="desc">A glass sheet slides down, swaps, and slides back up.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/zoom.html">
+          <video muted loop playsinline preload="none" poster="poster/zoom.jpg"
+                 aria-label="zoom transition running on Android and iOS">
+            <source src="media/zoom.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>zoom</code></span>
+            <span class="desc">The old screen scales up and fades away.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/pixlated.html">
+          <video muted loop playsinline preload="none" poster="poster/pixlated.jpg"
+                 aria-label="pixlated transition running on Android and iOS">
+            <source src="media/pixlated.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>pixlated</code></span>
+            <span class="desc">Colours swap behind a pixel mosaic.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/dissolve.html">
+          <video muted loop playsinline preload="none" poster="poster/dissolve.jpg"
+                 aria-label="dissolve transition running on Android and iOS">
+            <source src="media/dissolve.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>dissolve</code></span>
+            <span class="desc">Disintegrates into grain, speck by speck.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/stripes.html">
+          <video muted loop playsinline preload="none" poster="poster/stripes.jpg"
+                 aria-label="stripes transition running on Android and iOS">
+            <source src="media/stripes.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>stripes</code></span>
+            <span class="desc">A grainy edge sweeps across, cell by cell.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/ripple.html">
+          <video muted loop playsinline preload="none" poster="poster/ripple.jpg"
+                 aria-label="ripple transition running on Android and iOS">
+            <source src="media/ripple.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>ripple</code></span>
+            <span class="desc">Wavefronts expand from where you tapped.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+        <a class="card" href="effects/shatter.html">
+          <video muted loop playsinline preload="none" poster="poster/shatter.jpg"
+                 aria-label="shatter transition running on Android and iOS">
+            <source src="media/shatter.mp4" type="video/mp4" />
+          </video>
+          <span class="meta">
+            <span class="name"><code>shatter</code></span>
+            <span class="desc">Breaks into shards that fall away in turn.</span>
+            <span class="more">Options and native detail →</span>
+          </span>
+        </a>
+      </div>
+
+      <footer>
+        MIT © <a href="https://salehos.com">Saleh Almashni</a> ·
+        <a href="https://github.com/saleh2001k/react-native-nitro-theme-transition">source</a> · built on
+        <a href="https://nitro.margelo.com">Nitro Modules</a>
+      </footer>
+    </div>
+    <script src="site.js"></script>
+  </body>
+</html>

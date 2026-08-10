@@ -9,6 +9,7 @@ import { View } from "react-native";
 import {
   THEME_TRANSITION_DIRECTIONS,
   THEME_TRANSITION_KINDS,
+  THEME_TRANSITION_BLUR_STYLES,
   THEME_TRANSITION_SHAPES,
   isThemeTransitionAvailable,
 } from "react-native-nitro-theme-transition";
@@ -36,7 +37,7 @@ import {
   Tile,
   TileGrid,
 } from "@/components/ui";
-import { DIRECTION_META, KIND_META, SHAPE_META } from "@/kinds";
+import { BLUR_STYLE_META, DIRECTION_META, KIND_META, SHAPE_META } from "@/kinds";
 import {
   themeStore,
   useChangeCount,
@@ -114,6 +115,35 @@ export default function Playground() {
         icon="hardware-chip-outline"
       />
 
+      {settings.kind === "blur" && (
+        <>
+          <SectionTitle>Blur style</SectionTitle>
+          <Hint>
+            All at once blurs the whole screen and lets it recede. Swept wipes the new theme in
+            out of focus and pulls it sharp as it arrives — the old screen is never blurred.
+          </Hint>
+          <Row gap={8} wrap style={{ marginTop: 12 }}>
+            {THEME_TRANSITION_BLUR_STYLES.map((blurStyle) => (
+              <Chip
+                key={blurStyle}
+                active={blurStyle === settings.blurStyle}
+                icon={BLUR_STYLE_META[blurStyle].icon}
+                label={BLUR_STYLE_META[blurStyle].label}
+                onPress={() =>
+                  runThemed(
+                    () => {
+                      themeStore.setTheme(nextThemeName(themeStore.getState().themeName));
+                      themeStore.setSettings({ blurStyle });
+                    },
+                    { blurStyle },
+                  )
+                }
+              />
+            ))}
+          </Row>
+        </>
+      )}
+
       {settings.kind === "iris" && (
         <>
           <SectionTitle>Iris shape</SectionTitle>
@@ -178,13 +208,16 @@ export default function Playground() {
       {(settings.kind === "slide" ||
         settings.kind === "split" ||
         settings.kind === "barnDoor" ||
-        settings.kind === "blinds") && (
+        settings.kind === "blinds" ||
+        (settings.kind === "blur" && settings.blurStyle === "sweep")) && (
         <>
           <SectionTitle>
-            {settings.kind === "slide" ? "Wipe direction" : "Sweep axis"}
+            {settings.kind === "slide" || settings.kind === "blur"
+              ? "Wipe direction"
+              : "Sweep axis"}
           </SectionTitle>
           <Hint>
-            {settings.kind === "slide"
+            {settings.kind === "slide" || settings.kind === "blur"
               ? "The edge the OLD screen leaves through. Nothing translates — a mask animates."
               : "These use both edges, so this picks the axis — top/bottom work horizontally, left/right vertically."}
           </Hint>
@@ -310,8 +343,8 @@ export default function Playground() {
 
       <SectionTitle>Reveal origin</SectionTitle>
       <Hint>
-        Only the two circular effects use it. A wipe and a fade ignore it
-        entirely.
+        Used by the shape reveals — circle in, circle out and iris — and by
+        ripple. Every other effect ignores it.
       </Hint>
       <Row gap={8} wrap style={{ marginTop: 12 }}>
         {ORIGIN_MODES.map((mode) => (

@@ -102,6 +102,15 @@ class HybridThemeTransition : HybridThemeTransitionSpec() {
     /** Teardown for effects that are not an [Animator] — currently the fade. */
     var cancelEffect: (() -> Unit)? = null
 
+    /**
+     * The LIVE React root, when a swept `blur` has put a `RenderEffect` on it.
+     *
+     * Borrowed, not owned — so [stop] hands it back clean whatever happens, and
+     * that is the only thing standing between a cancelled transition and an app
+     * left permanently blurred.
+     */
+    var blurredRoot: View? = null
+
     fun stop() {
       // A no-op if it already ran to completion, so this cannot double-fire the
       // completion listener — `onAnimationCancel` is only reached from a genuine
@@ -114,7 +123,9 @@ class HybridThemeTransition : HybridThemeTransitionSpec() {
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         view.setRenderEffect(null)
+        blurredRoot?.setRenderEffect(null)
       }
+      blurredRoot = null
 
       // Detach BEFORE releasing. Removing the view is what stops it being asked
       // to re-record a display list, so by the time the frame is recycled below
@@ -486,7 +497,11 @@ class HybridThemeTransition : HybridThemeTransitionSpec() {
         animateSweep(transition, options, SnapshotView.SweepMode.BARN_DOOR, duration, finish)
       ThemeTransitionKind.BLINDS ->
         animateSweep(transition, options, SnapshotView.SweepMode.BLINDS, duration, finish)
-      ThemeTransitionKind.BLUR -> animateBlur(transition, duration, finish)
+      ThemeTransitionKind.BLUR -> animateBlur(transition, options, duration, finish)
+      // Liquid Glass is an iOS 26 material. There is no Android equivalent, and
+      // a hand-rolled imitation would be a full-screen shader per frame — the
+      // exact cost this library exists to avoid. A blur is the honest fallback.
+      ThemeTransitionKind.LIQUIDGLASS -> animateBlur(transition, options, duration, finish)
       ThemeTransitionKind.ZOOM -> animateZoom(transition, duration, finish)
       ThemeTransitionKind.PIXLATED -> animatePixlated(transition, duration, finish)
       ThemeTransitionKind.DISSOLVE ->
@@ -537,6 +552,7 @@ class HybridThemeTransition : HybridThemeTransitionSpec() {
         // More boundaries to follow than a plain wipe has.
         ThemeTransitionKind.BLINDS -> 300.0
         ThemeTransitionKind.BLUR -> 300.0
+        ThemeTransitionKind.LIQUIDGLASS -> 620.0
         // Grain has no shape to follow, so the eye reads it as texture rather
         // than motion until it has had time to thin out.
         ThemeTransitionKind.DISSOLVE,
@@ -849,30 +865,113 @@ class HybridThemeTransition : HybridThemeTransitionSpec() {
    * Below API 31 there is no RenderEffect, and the honest fallback is the same
    * motion without the blur rather than a CPU blur that would drop frames.
    */
-  private fun animateBlur(transition: Transition, duration: Long, finish: () -> Unit) {
+  private fun animateBlur(
+    transition: Transition,
+    options: ThemeTransitionOptions,
+    duration: Long,
+    finish: () -> Unit,
+  ) {
+    val view = transition.view
+
     // `RenderEffect` radii are in px, so a fixed constant would be a heavy blur on
     // a 1x screen and a faint one on a 3x screen.
-    val radius = BLUR_RADIUS_DP * transition.view.resources.displayMetrics.density
+    val radius = BLUR_RADIUS_DP * view.resources.displayMetrics.density
 
-    // A RenderEffect cannot be interpolated, so it is reassigned as the radius
-    // moves — but only when it moves by a whole pixel. Sub-pixel steps are
-    // invisible in a blur and each one allocates a native effect object and
-    // dirties the render node for nothing.
-    var lastRadius = -1
+    if (options.blurStyle != ThemeTransitionBlurStyle.SWEEP) {
+      // A RenderEffect cannot be interpolated, so it is reassigned as the radius
+      // moves — but only when it moves by a whole pixel. Sub-pixel steps are
+      // invisible in a blur and each one allocates a native effect object and
+      // dirties the render node for nothing.
+      var lastRadius = -1
 
-    start(transition, duration, finish) { view, t ->
-      view.alpha = 1f - t
-      view.scaleX = 1f + 0.04f * t
-      view.scaleY = 1f + 0.04f * t
+      start(transition, duration, finish) { snapshot, t ->
+        snapshot.alpha = 1f - t
+        snapshot.scaleX = 1f + 0.04f * t
+        snapshot.scaleY = 1f + 0.04f * t
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val stepped = (radius * t).toInt()
-        if (stepped != lastRadius) {
-          lastRadius = stepped
-          applyBlur(view, stepped.toFloat())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+          val stepped = (radius * t).toInt()
+          if (stepped != lastRadius) {
+            lastRadius = stepped
+            applyBlur(snapshot, stepped.toFloat())
+          }
         }
       }
+      return
     }
+
+    /*
+     * `.sweep`: a wipe that brings the NEW theme in out of focus, and pulls it
+     * sharp as it arrives.
+     *
+     * ── The blur is on the incoming side ──
+     * The outgoing copy is never blurred: it stays crisp right up to the edge
+     * and is simply taken away by the clip. What is out of focus is the theme
+     * arriving behind it. Blurring the outgoing copy instead reads as the screen
+     * you are leaving being smeared off, which is the opposite of the intent.
+     *
+     * ── Which means blurring the LIVE view ──
+     * iOS can put a backdrop-blurring view underneath the snapshot and be done.
+     * Android has no equivalent for a sibling — `RenderEffect` only ever applies
+     * to a view's OWN content — so the effect goes on the live React root
+     * itself, and comes off again as the wipe finishes.
+     *
+     * ⚠ That is someone else's view, so it must always be handed back clean.
+     * Two things guarantee it: `Transition.stop()` clears whatever it was given
+     * (and stop() runs on completion, on the overlay cap, on abort and on
+     * dispose), and the delayed sweep below is a backstop in case a transition
+     * is ever dropped without either.
+     */
+    view.direction = options.direction
+
+    if (options.angleDeg == 0.0) {
+      view.clip = SnapshotView.Clip.WIPE
+    } else {
+      view.prepareSweep(options.angleDeg, SnapshotView.SweepMode.WIPE)
+      view.clip = SnapshotView.Clip.SWEEP
+    }
+
+    val live =
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) liveRoot() else null
+
+    var lastRadius = -1
+
+    fun sharpen(t: Float) {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || live == null) return
+
+      // Reaches zero before the wipe does, so the last sliver to be uncovered is
+      // already sharp and the transition does not end on a soft frame.
+      val remaining = (1f - t / 0.85f).coerceIn(0f, 1f)
+      val stepped = (radius * remaining).toInt()
+      if (stepped == lastRadius) return
+      lastRadius = stepped
+      applyBlur(live, stepped.toFloat())
+    }
+
+    if (live != null) {
+      transition.blurredRoot = live
+      sharpen(0f)
+
+      // Backstop. Cheap, and the alternative failure is an app left blurred.
+      mainHandler.postDelayed(
+        { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) live.setRenderEffect(null) },
+        duration + 500L,
+      )
+    }
+
+    start(transition, duration, finish) { snapshot, t ->
+      snapshot.progress = t
+      sharpen(t)
+    }
+  }
+
+  /** The live React root — the app itself, already wearing the new theme. */
+  private fun liveRoot(): View? {
+    val activity = NitroModules.applicationContext?.currentActivity ?: return null
+    val content = activity.findViewById<ViewGroup>(android.R.id.content) ?: return null
+    return (0 until content.childCount)
+      .map(content::getChildAt)
+      .firstOrNull { it !is SnapshotView }
   }
 
   @RequiresApi(Build.VERSION_CODES.S)

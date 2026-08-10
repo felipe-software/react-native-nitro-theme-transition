@@ -1,14 +1,16 @@
 # react-native-nitro-theme-transition
 
-Native, GPU-driven theme-change transitions for React Native — fifteen of them:
+Native, GPU-driven theme-change transitions for React Native — sixteen of them:
 circular reveal and its inverse, iris, wipe, split, barn door, blinds, fade,
-zoom, blur, pixelize, dissolve, stripes, ripple and shatter.
+zoom, blur, Liquid Glass, pixelize, dissolve, stripes, ripple and shatter.
 
 **No Skia. No Reanimated. No JS animation library.** The animation is Core
 Animation on iOS and the platform animators on Android, both interpolated by the
 OS render thread, so a busy JavaScript thread cannot drop a frame of it.
 
 Built on [Nitro Modules](https://nitro.margelo.com). iOS and Android.
+
+**[▶ Watch all sixteen, full resolution →](https://saleh2001k.github.io/react-native-nitro-theme-transition/)**
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demo.gif" alt="The example app switching themes on Android and iOS side by side" width="700">
@@ -106,10 +108,11 @@ is not in the loop and cannot stutter it.
 | -------------- | ------------------ | ---------------------------------------------------------- |
 | `kind`         | `'circularReveal'` | see below                                                  |
 | `durationMs`   | `650`              | below ~500ms most reveals read as a flicker; try longer for `pixlated` |
-| `origin`       | screen centre      | circle centre, in dp — pass the touch's `pageX/pageY`       |
-| `direction`    | `'bottom'`         | `slide` / `split` — edge the wipe travels toward; the axis for `split` |
-| `angleDeg`     | `0`                | tilt of the boundary line, in degrees — every sweep kind   |
+| `origin`       | screen centre      | where the effect starts, in dp — pass the touch's `pageX/pageY`; used by the shape reveals and `ripple` |
+| `direction`    | `'bottom'`         | `slide` / `split` / `barnDoor` / `blinds` / `stripes` / swept `blur` — the edge, or the axis for the two-edged kinds |
+| `angleDeg`     | `0`                | `slide` / `split` / `barnDoor` / `blinds` / swept `blur` — tilt of the boundary line, in degrees |
 | `shape`        | `'hexagon'`        | `iris` — `'circle' \| 'diamond' \| 'hexagon' \| 'roundedRect'` |
+| `blurStyle`    | `'uniform'`        | `blur` — `'uniform' \| 'sweep'`                             |
 | `bands`        | `6`                | `blinds` — louvre count, clamped to 2…24                   |
 | `settleFrames` | `2`                | frames to hold before revealing, so the change has painted |
 
@@ -158,23 +161,54 @@ is not enough for that kind when the theme is React-driven.
 
 ## Kinds
 
+All sixteen, recorded on Android and iOS side by side. Full-resolution video for
+every one is on the **[demo site](https://saleh2001k.github.io/react-native-nitro-theme-transition/)**.
+
+<table>
+<tr align="center">
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/fade.gif" width="185" alt="fade"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/fade.html"><code>fade</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/circle-in.gif" width="185" alt="circularReveal"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/circularReveal.html"><code>circularReveal</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/circle-out.gif" width="185" alt="circularRevealInverse"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/circularRevealInverse.html"><code>circularRevealInverse</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/iris.gif" width="185" alt="iris"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/iris.html"><code>iris</code></a></td>
+</tr>
+<tr align="center">
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/wipe.gif" width="185" alt="slide"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/slide.html"><code>slide</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/split.gif" width="185" alt="split"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/split.html"><code>split</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/barn-door.gif" width="185" alt="barnDoor"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/barnDoor.html"><code>barnDoor</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/blinds.gif" width="185" alt="blinds"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/blinds.html"><code>blinds</code></a></td>
+</tr>
+<tr align="center">
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/blur.gif" width="185" alt="blur"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/blur.html"><code>blur</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/liquid-glass.gif" width="185" alt="liquidGlass"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/liquidGlass.html"><code>liquidGlass</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/zoom.gif" width="185" alt="zoom"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/zoom.html"><code>zoom</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/pixlated.gif" width="185" alt="pixlated"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/pixlated.html"><code>pixlated</code></a></td>
+</tr>
+<tr align="center">
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/dissolve.gif" width="185" alt="dissolve"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/dissolve.html"><code>dissolve</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/stripes.gif" width="185" alt="stripes"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/stripes.html"><code>stripes</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/ripple.gif" width="185" alt="ripple"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/ripple.html"><code>ripple</code></a></td>
+<td><img src="https://raw.githubusercontent.com/saleh2001k/react-native-nitro-theme-transition/main/assets/demos/shatter.gif" width="185" alt="shatter"><br><a href="https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/shatter.html"><code>shatter</code></a></td>
+</tr>
+</table>
+
 | `kind`                    | What the outgoing screen does                                      |
 | ------------------------- | ------------------------------------------------------------------ |
-| `'circularReveal'`        | collapses **into** a circle at `origin`                            |
-| `'circularRevealInverse'` | a hole opens **out** from `origin` and grows                       |
-| `'iris'`                  | collapses into a `shape` — diamond, hexagon or squircle             |
-| `'slide'`                 | a straight edge wipes across, painting the new theme               |
-| `'split'`                 | two edges part from the centre, retreating to opposite sides       |
-| `'barnDoor'`              | two edges close in; the old screen shrinks to a middle band        |
-| `'blinds'`                | `bands` parallel louvres, each wiping across itself at once        |
-| `'fade'`                  | dissolves                                                          |
-| `'zoom'`                  | scales up and fades                                                |
-| `'blur'`                  | blurs and recedes slightly as it dissolves                         |
-| `'pixlated'`              | breaks into pixels; the colour swap rides the mosaic mid-transition |
-| `'dissolve'`              | disintegrates into grain, speck by speck                           |
-| `'stripes'`               | a grainy edge sweeps across, ordered along `direction`             |
-| `'ripple'`                | wavefronts expand from `origin`                                    |
-| `'shatter'`               | breaks into shards that fall away in turn                          |
+| [`'circularReveal'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/circularReveal.html)        | collapses **into** a circle at `origin`                            |
+| [`'circularRevealInverse'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/circularRevealInverse.html) | a hole opens **out** from `origin` and grows                       |
+| [`'iris'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/iris.html)                  | collapses into a `shape` — diamond, hexagon or squircle             |
+| [`'slide'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/slide.html)                 | a straight edge wipes across, painting the new theme               |
+| [`'split'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/split.html)                 | two edges part from the centre, retreating to opposite sides       |
+| [`'barnDoor'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/barnDoor.html)              | two edges close in; the old screen shrinks to a middle band        |
+| [`'blinds'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/blinds.html)                | `bands` parallel louvres, each wiping across itself at once        |
+| [`'fade'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/fade.html)                  | dissolves                                                          |
+| [`'zoom'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/zoom.html)                  | scales up and fades                                                |
+| [`'blur'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/blur.html)                  | blurs away — all at once, or swept across; see `blurStyle`          |
+| [`'liquidGlass'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/liquidGlass.html)           | a sheet of Liquid Glass slides down, the theme swaps behind it, and it slides back up — **iOS 26+**, falls back to `blur` elsewhere |
+| [`'pixlated'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/pixlated.html)              | breaks into pixels; the colour swap rides the mosaic mid-transition |
+| [`'dissolve'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/dissolve.html)              | disintegrates into grain, speck by speck                           |
+| [`'stripes'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/stripes.html)               | a grainy edge sweeps across, ordered along `direction`             |
+| [`'ripple'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/ripple.html)                | wavefronts expand from `origin`                                    |
+| [`'shatter'`](https://saleh2001k.github.io/react-native-nitro-theme-transition/effects/shatter.html)               | breaks into shards that fall away in turn                          |
 
 They come from four families, and the family is what actually matters:
 
@@ -183,12 +217,12 @@ They come from four families, and the family is what actually matters:
 | Shape mask | `circularReveal`, `circularRevealInverse`, `iris` | a shrinking outline at a point |
 | Straight boundaries | `slide`, `split`, `barnDoor`, `blinds` | half-planes sweeping along a normal |
 | Mask ladder | `dissolve`, `stripes`, `ripple`, `shatter` | a per-cell disappearing order, pre-built |
-| Whole-layer | `fade`, `zoom`, `blur`, `pixlated` | animate the copy itself |
+| Whole-layer | `fade`, `zoom`, `blur`, `liquidGlass`, `pixlated` | animate the copy itself |
 
-All fifteen share one timing curve, so the two platforms agree. Each also has a
+All sixteen share one timing curve, so the two platforms agree. Each also has a
 minimum duration — 200ms for `fade`, 240ms for `zoom`, 260ms for the reveals and
 the sweeps, 300ms for `blinds` and `blur`, 420ms for `dissolve` and `stripes`,
-480ms for `ripple` and `shatter`, 520ms for `pixlated`. Below those a full-screen
+480ms for `ripple` and `shatter`, 520ms for `pixlated`, 620ms for `liquidGlass`. Below those a full-screen
 copy coming apart has too few frames to read as motion. Pass `durationMs: 0` to
 opt out of animating entirely; that is never clamped.
 
@@ -201,6 +235,28 @@ pixels stay exactly where they are and stop being drawn as the boundary passes
 over them, so it reads as a line painting the new colours across the screen.
 Translating the snapshot instead drags the whole UI sideways, which looks like a
 page transition rather than a theme change.
+
+### `blurStyle` — all at once, or swept
+
+`'uniform'` is the original behaviour: the whole screen blurs, recedes slightly
+and fades. `'sweep'` is a wipe that brings the NEW theme in **out of focus** and
+pulls it sharp as it arrives:
+
+```ts
+withThemeTransition(applyTheme, {
+  kind: 'blur',
+  blurStyle: 'sweep',
+  direction: 'bottom',
+});
+```
+
+The blur is on the **incoming** side, not the outgoing one. The old screen is
+never blurred: it stays crisp right up to the edge and is simply taken away by
+the mask, while the theme arriving behind it starts heavily out of focus and
+sharpens as the wipe crosses. Blurring the outgoing copy instead reads as the
+screen you are leaving being smeared off, which is the opposite of the intent.
+
+The swept variant takes `direction` and `angleDeg` exactly as `slide` does.
 
 ### `angleDeg` — tilting the wipe
 
@@ -264,6 +320,7 @@ only when the overlay is removed.
 | `'split'` `'barnDoor'` `'blinds'` | animated mask half-planes / slabs | `Canvas.clipPath` over all of them        |
 | `'blur'`                  | `UIVisualEffectView` + property animator | `RenderEffect.createBlurEffect` (API 31+) |
 | `'zoom'`                  | `UIViewPropertyAnimator`, scale + alpha  | `ViewPropertyAnimator`, scale + alpha     |
+| `'liquidGlass'`           | a sliding `UIGlassEffect` sheet, swap held behind it | falls back to `blur`            |
 | `'pixlated'`              | dual mosaic + alpha crossfade            | dual mosaic + alpha crossfade             |
 | `'dissolve'` `'stripes'` `'ripple'` `'shatter'` | discrete `CAKeyframeAnimation` on a mask | `ALPHA_8` mask composited `DST_IN` |
 
@@ -380,4 +437,4 @@ bun run build        # bob
 
 ## License
 
-MIT
+MIT © [Saleh Almashni](https://salehos.com)

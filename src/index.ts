@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import { NitroModules } from 'react-native-nitro-modules';
 import type {
   ThemeTransition,
+  ThemeTransitionBlurStyle,
   ThemeTransitionDirection,
   ThemeTransitionKind,
   ThemeTransitionShape,
@@ -9,6 +10,7 @@ import type {
 
 export type {
   ThemeTransition,
+  ThemeTransitionBlurStyle,
   ThemeTransitionDirection,
   ThemeTransitionKind,
   ThemeTransitionShape,
@@ -20,21 +22,34 @@ export type ThemeTransitionConfig = {
   /**
    * Animation length in milliseconds. Defaults to 650.
    *
-   * There is a floor, applied natively so both platforms agree: 200ms for
-   * `fade`, 260ms for the reveals and `slide`, 300ms for `blur`, 520ms for
-   * `pixlated`. Below those a full-screen copy coming apart does not have enough
-   * frames to read as motion — the eye gets the start and the end and nothing
-   * between them, which looks like a flicker with a hard edge in it rather than
-   * a fast transition. `pixlated` is the highest because it has to grow a
-   * mosaic, swap the colours behind it and take the mosaic back down again.
+   * There is a floor, applied natively so both platforms agree:
+   *
+   * | Floor | Kinds |
+   * | ----- | ----- |
+   * | 200ms | `fade` |
+   * | 240ms | `zoom` |
+   * | 260ms | the shape reveals, `slide`, `split`, `barnDoor` |
+   * | 300ms | `blinds`, `blur` |
+   * | 420ms | `dissolve`, `stripes` |
+   * | 480ms | `ripple`, `shatter` |
+   * | 520ms | `pixlated` |
+   * | 620ms | `liquidGlass` |
+   *
+   * Below those a full-screen copy coming apart does not have enough frames to
+   * read as motion — the eye gets the start and the end and nothing between
+   * them, which looks like a flicker with a hard edge in it rather than a fast
+   * transition. `pixlated` is the highest because it has to grow a mosaic, swap
+   * the colours behind it and take the mosaic back down again.
    *
    * Pass `0` to opt out entirely: that still means "no animation" and is not
    * clamped.
    */
   durationMs?: number;
   /**
-   * Centre of the circle for `circularReveal` / `circularRevealInverse`, in dp.
-   * Omit for the centre of the screen.
+   * Where the effect starts, in dp. Omit for the centre of the screen.
+   *
+   * Used by the shape reveals — `circularReveal`, `circularRevealInverse`,
+   * `iris` — and by `ripple` and `liquidGlass`. Every other kind ignores it.
    *
    * Pass a touch event's `pageX/pageY` as-is. React Native reports those relative
    * to the surface the touch happened in, and a presented screen — a modal, a
@@ -50,17 +65,19 @@ export type ThemeTransitionConfig = {
    */
   origin?: { x: number; y: number };
   /**
-   * Edge the outgoing screen leaves through — `slide` and `split`.
-   * `'bottom'` drops the old screen off the bottom edge.
+   * Edge the outgoing screen leaves through — `slide`, `split`, `barnDoor`,
+   * `blinds`, `stripes`, and `blur` with `blurStyle: 'sweep'`. `'bottom'` drops
+   * the old screen off the bottom edge.
    *
-   * `split` uses both edges at once, so this picks the axis instead:
-   * `'top'`/`'bottom'` part the screen horizontally, `'left'`/`'right'`
+   * Every kind but `slide` uses both edges at once, so for those this picks the
+   * axis instead: `'top'`/`'bottom'` work horizontally, `'left'`/`'right'`
    * vertically.
    */
   direction?: ThemeTransitionDirection;
   /**
-   * Tilt of the boundary line in degrees — `slide` and `split`. Defaults to 0,
-   * the axis-aligned edge.
+   * Tilt of the boundary line in degrees — `slide`, `split`, `barnDoor`,
+   * `blinds`, and `blur` with `blurStyle: 'sweep'`. Defaults to 0, the
+   * axis-aligned edge.
    *
    * The sweep still travels along `direction`; the line doing the sweeping is
    * raked over. `{ direction: 'top', angleDeg: 40 }` leaves through the top with
@@ -76,6 +93,15 @@ export type ThemeTransitionConfig = {
    * kind is still the one to reach for when a circle is what you want.
    */
   shape?: ThemeTransitionShape;
+  /**
+   * How `blur` applies itself — `blur` only. Defaults to `'uniform'`.
+   *
+   * `'uniform'` blurs the whole screen at once and lets it recede, which is the
+   * original behaviour. `'sweep'` deepens the blur behind a straight edge
+   * travelling across, so the old screen blurs away in one direction rather than
+   * all over — and it takes `direction` and `angleDeg` exactly as `slide` does.
+   */
+  blurStyle?: ThemeTransitionBlurStyle;
   /**
    * How many parallel slabs the screen is cut into — `blinds` only. Defaults to
    * 6, and is clamped natively to 2…24.
@@ -111,6 +137,7 @@ const DEFAULTS = {
   settleFrames: 2,
   angleDeg: 0,
   shape: 'hexagon' as ThemeTransitionShape,
+  blurStyle: 'uniform' as ThemeTransitionBlurStyle,
   bands: 6,
 };
 
@@ -125,6 +152,7 @@ export const THEME_TRANSITION_KINDS = [
   'barnDoor',
   'blinds',
   'blur',
+  'liquidGlass',
   'zoom',
   'pixlated',
   'dissolve',
@@ -132,6 +160,12 @@ export const THEME_TRANSITION_KINDS = [
   'ripple',
   'shatter',
 ] as const satisfies readonly ThemeTransitionKind[];
+
+/** Every `blur` style, for building pickers. */
+export const THEME_TRANSITION_BLUR_STYLES = [
+  'uniform',
+  'sweep',
+] as const satisfies readonly ThemeTransitionBlurStyle[];
 
 /** Every `iris` outline, for building pickers. */
 export const THEME_TRANSITION_SHAPES = [
@@ -243,6 +277,7 @@ export function withThemeTransition(applyTheme: () => void, config: ThemeTransit
         direction: config.direction ?? DEFAULTS.direction,
         angleDeg: config.angleDeg ?? DEFAULTS.angleDeg,
         shape: config.shape ?? DEFAULTS.shape,
+        blurStyle: config.blurStyle ?? DEFAULTS.blurStyle,
         bands: config.bands ?? DEFAULTS.bands,
       })
       .catch(() => {

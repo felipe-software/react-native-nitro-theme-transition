@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ripple — react-native-nitro-theme-transition</title>
+    <meta name="description" content="Wavefronts expand from where you tapped. Every option the ripple theme transition takes, and how it is implemented on iOS and Android." />
+    <meta property="og:title" content="ripple — react-native-nitro-theme-transition" />
+    <meta property="og:description" content="Wavefronts expand from where you tapped. Every option the ripple theme transition takes, and how it is implemented on iOS and Android." />
+    <link rel="stylesheet" href="../style.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🌗</text></svg>" />
+    <link rel="preload" as="video" href="../media/ripple.mp4" />
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="crumbs">
+        <a href="../index.html">← All sixteen effects</a>
+        <button class="btn" id="toggle" type="button" aria-label="Toggle colour scheme">
+          <span id="toggle-icon">🌙</span> <span id="toggle-label">Dark</span>
+        </button>
+      </nav>
+
+      <article>
+        <h1><code>ripple</code></h1>
+        <p class="lede">Wavefronts expand from where you tapped.</p>
+
+        <video class="hero" muted loop playsinline autoplay preload="auto"
+               poster="../poster/ripple.jpg"
+               aria-label="ripple transition running on Android and iOS">
+          <source src="../media/ripple.mp4" type="video/mp4" />
+        </video>
+        <p class="caption">
+          The <a href="https://github.com/saleh2001k/react-native-nitro-theme-transition/tree/main/example">example app</a> on an Android emulator and an iOS
+          simulator at once. Click to replay.
+        </p>
+
+        <p class="body">The same mask ladder as <code>dissolve</code>, with its cells ordered by distance from <code>origin</code> — so the grain leaves as concentric wavefronts rather than at random.</p>
+
+        <h2>Options it takes</h2>
+        <table class="opts">
+          <thead>
+            <tr><th>Option</th><th>Type</th><th>Default</th><th>What it does here</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="opt">origin</code></td>
+              <td><code class="type">{ x: number; y: number }</code></td>
+              <td><code>screen centre</code></td>
+              <td>Where the effect starts, in dp. Pass a touch’s <code>pageX/pageY</code> as-is — the offset inside a modal or form sheet is corrected natively.</td>
+            </tr>
+            <tr>
+              <td><code class="opt">durationMs</code></td>
+              <td><code class="type">number</code></td>
+              <td><code>650</code></td>
+              <td>Animation length. Clamped up to this kind’s floor; <code>0</code> means no animation and is never clamped.</td>
+            </tr>
+            <tr>
+              <td><code class="opt">settleFrames</code></td>
+              <td><code class="type">number</code></td>
+              <td><code>2</code></td>
+              <td>Display frames to hold the snapshot before revealing, so the theme swap has painted underneath.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="ignored">Ignored by this kind: <code>direction</code>, <code>angleDeg</code>, <code>shape</code>, <code>blurStyle</code>, <code>bands</code>. Passing them is harmless.</p>
+
+        <h2>Minimum duration</h2>
+        <p class="body">
+          A request below <strong>480ms</strong> is clamped up to it, natively, so both
+          platforms agree. Below that floor a full-screen copy coming apart has too few frames to
+          read as motion — the eye gets the start and the end and nothing in between, which looks
+          like a flicker rather than a fast transition. <code>durationMs: 0</code> still means “no
+          animation” and is never clamped.
+        </p>
+
+        <h2>Usage</h2>
+        <pre class="code"><code>withThemeTransition(applyTheme, {
+  kind: 'ripple',
+  durationMs: 650,
+  origin: { x: pageX, y: pageY },
+});</code></pre>
+
+        <h2>How it is done</h2>
+        <table class="opts native">
+          <tbody>
+            <tr><th>iOS</th><td>the same mask ladder, ordered by distance from the origin</td></tr>
+            <tr><th>Android</th><td>the same mask ladder, ordered by distance from the origin</td></tr>
+          </tbody>
+        </table>
+
+      </article>
+
+      <nav class="pager">
+        <a href="stripes.html">← <code>stripes</code></a>
+        <a href="shatter.html"><code>shatter</code> →</a>
+      </nav>
+
+      <footer>
+        MIT © <a href="https://salehos.com">Saleh Almashni</a> ·
+        <a href="https://github.com/saleh2001k/react-native-nitro-theme-transition">source</a> · built on
+        <a href="https://nitro.margelo.com">Nitro Modules</a>
+      </footer>
+    </div>
+    <script src="../site.js"></script>
+  </body>
+</html>
