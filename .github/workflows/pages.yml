@@ -27,9 +27,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -38,7 +38,12 @@ jobs:
       # that disagrees with scripts/docs-data.mjs.
       - run: node ./scripts/build-docs.mjs
 
+      # `enablement` turns Pages on via the API if it is off, rather than failing
+      # with "Get Pages site failed". Needed on a fresh clone or a fork, and it
+      # is a no-op once Pages is already configured.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
